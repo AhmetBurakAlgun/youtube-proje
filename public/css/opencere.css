@@ -1,0 +1,83 @@
+#modal-btn{color:#0a0a0a91;font-style:italic;cursor:pointer;font-weight:500;}
+#modal-area{position:fixed;height:100%;width:100%;left:0;top:0;display:flex;align-items:center;justify-content:center;display:none;animation:appear 350ms ease-in 1;}
+.modal-content{position:absolute;width:80%;height:82%;background-image: -o-linear-gradient(315deg, #b9aeaeed 0%, #5a5252d6 100%);background-image: linear-gradient(135deg, #b9aeaeed 0%, #5a5252d6 100%);color:#ffffff;padding:65px;display:flex;justify-content:center;text-align:center;border:6px inset #0000001f;border-right:none;box-shadow:inset 0px 0px 28px -10px #000000b8;}
+@media screen and (max-width:480px){.modal-content{height:85%;}
+}
+.details-person h2{letter-spacing:4px;text-transform:uppercase;font-size:26px;font-weight:400;}
+.details-person p{line-height:15px;margin:0;padding:15px 0px 0px 0px;font-weight:400;font-style:italic;}
+.modal-close{position:absolute;height:40px;width:40px;border-radius:50%;background-color:#ffffff;cursor:pointer;color:#da0000;right:10;top:10;font-size:25px;line-height:41px;transform:rotate(45deg);}
+.username-not{margin-bottom:-4;}
+@keyframes appear{0%{opacity:0;transform:translateY(-10px);}
+}
+.margin-bottom30{margin-bottom:30px;}
+.kanalidbut-text{color:#ffffff;font-style:normal;border-radius:4px;cursor:pointer;background:#4e2a2a61;padding:4px 2px;}
+.not-baslik{font-size:18px;margin:1.0933333333rem 0 .656rem 0;font-weight:500;text-transform:lowercase;letter-spacing:2px;text-shadow:3px 3px 3px #00000057;}
+@keyframes pulse{0%{transform:scale(0.95);box-shadow:0 0 0 0 rgba(0, 0, 0, 0.7);}
+70%{transform:scale(1);box-shadow:0 0 0 10px rgba(0, 0, 0, 0);}
+100%{transform:scale(0.95);box-shadow:0 0 0 0 rgba(0, 0, 0, 0);}
+}
+.scrollbar::-webkit-scrollbar{background-color:#5d5757a8;width:9px;}
+.scrollbar::-webkit-scrollbar-track{background-image:none;}
+.scrollbar::-webkit-scrollbar-track:hover{background-color:#ffffff00;}
+.scrollbar::-webkit-scrollbar-thumb{background-color:#ef3a3a;border-radius:9px;border:3px solid #ffffff;}
+.scrollbar::-webkit-scrollbar-thumb:hover{background-color:#ffffff00;border:3px solid #f4f4f4}
+.scrollbar::-webkit-scrollbar-button{display:none}
+.scrollbar{min-width:150px;overflow-y:scroll}
+@media screen and (max-width:480px){.modal-content{padding:15px 30px 0px 30px;}
+}
+.not-arabaslik{color:#3e3b3b;font-size:22px;font-weight:600;}
+@media screen and (max-width:480px){.not-arabaslik{font-size:17px;padding-top:40px;padding-bottom:20px;font-weight:500;color:white;text-shadow:0px 1px 3px #000000c4;}
+}
+@media only screen and (max-width:320px){.username-not{width:190px;margin:3px 22px 3px 22px;}
+}
+@media only screen and (min-width:360px) and (max-width:414px){.username-not{margin:2px 40px 2px 40px;width:200px;}
+}
+@media only screen and (min-width:412px) and (max-width:480px){.username-not{margin:2px 70px 2px 70px;width:200px;}
+}
+@media only screen and (max-width:320px){.details-person p{padding:8px 0px 0px 0px;line-height:1.5;font-size:8px;}
+}
+@media only screen and (min-width:360px) and (max-width:480px){.details-person p{padding:10px 0px 0px 0px;font-size:10px;}
+}
+@media only screen and (min-width:320px) and (max-width:359px){input::placeholder{font-size:5.5px!important;}
+}
+@media only screen and (min-width:360px) and (max-width:375px){input::placeholder{font-size:7.5px!important;}
+}
+@media only screen and (min-width:376px) and (max-width:480px){input::placeholder{font-size:9px!important;}
+}
+@media screen and (max-width:320px){.iframevideo{width:100%;}
+}
+.not-icerik{color:#ffffff;font-size:19px;text-transform:none;}
+.kopyalanacak-alanlar{font-weight:600;text-transform:capitalize;color:#59f47a;}
+.youtube {
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    display: block;
+    overflow: hidden;
+    transition: all 200ms ease-out;
+    cursor: pointer;
+    margin: 0px auto 0 auto;
+}
+
+iframe {
+  margin: 0px auto 0 auto;
+}
+
+.youtube .play {
+    background: url(../images/playicon.png) no-repeat center center;
+    background-size: 64px 64px;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    opacity: .9;
+    filter: alpha(opacity=90);
+    -webkit-transition: all 0.2s ease-out;
+    -moz-transition: all 0.2s ease-out;
+    -o-transition: all 0.2s ease-out;
+    transition: all 0.2s ease-out;
+}
+
+.youtube .play:hover {
+    opacity: 1;
+    filter: alpha(opacity=100);
+}

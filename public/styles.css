@@ -1,0 +1,374 @@
+/* Ana stil dosyası */
+:root {
+  --primary-color: #ff4b1f;
+  --secondary-color: #ff9068;
+  --text-color: #333;
+  --white: #fff;
+  --light-bg: #f8f9fa;
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --success: #28a745;
+  --primary-hover: #e6350e;
+}
+
+body {
+  font-family: 'Oxanium', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Başlık Stili */
+.ana-baslik {
+  font-size: 2.8rem;
+  color: var(--white);
+  text-align: center;
+  margin-bottom: 30px;
+  margin-top: 30px;
+  transition: all 0.4s ease;
+}
+
+/* Arama Formu Stili */
+.s130 {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+}
+
+.container {
+  width: 100%;
+  max-width: 800px;
+}
+
+.inner-form {
+  display: flex;
+  width: 100%;
+  box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.15);
+  border-radius: 34px;
+  overflow: hidden;
+}
+
+.input-field {
+  height: 68px;
+}
+
+.input-field .searchTerm {
+  height: 100%;
+  background: var(--white);
+  border: 0;
+  display: block;
+  width: 100%;
+  padding: 10px 32px 10px 70px;
+  font-size: 18px;
+  color: var(--text-color);
+}
+
+.input-field .searchTerm:focus {
+  outline: none;
+}
+
+.input-field.first-wrap {
+  flex-grow: 1;
+  position: relative;
+}
+
+.input-field.first-wrap .svg-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 20px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+}
+
+.input-field.first-wrap img {
+  width: 30px;
+  height: 30px;
+}
+
+.input-field.second-wrap {
+  width: 70px;
+}
+
+.input-field.second-wrap .btn-search {
+  height: 100%;
+  width: 100%;
+  background: var(--primary-color);
+  border: 0;
+  color: var(--white);
+  font-size: 24px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.input-field.second-wrap .btn-search:hover {
+  background: var(--primary-hover);
+}
+
+/* Kanal Banner */
+.youtuber-banner-alan {
+  text-align: center;
+  margin-bottom: 0;
+  width: 100%;
+  max-width: 800px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px 8px 0 0;
+  margin: 0 auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+#banner {
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px 8px 0 0;
+}
+
+/* Kanal Logosu */
+.youtuber-logo-alan {
+  text-align: center;
+  margin: 0 auto 30px;
+  position: relative;
+  z-index: 2;
+  margin-top: -40px;
+}
+
+.youtuber-logo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  /* Sadece temel görünüm stilleri kalacak, diğerlerini kaldırıyoruz */
+}
+
+#thumbnail {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid var(--white);
+  object-fit: cover;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Sonuç Alanı */
+.mobil {
+  font-size: 1.2rem;
+  color: var(--white);
+  text-align: center;
+}
+
+h3.mobil {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--white);
+  margin-top: 15px;
+}
+
+.no-margin {
+  margin: 0;
+}
+
+/* Sosyal Medya */
+.sag-kose {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+}
+
+.navbar {
+  list-style: none;
+  display: flex;
+  padding: 0;
+}
+
+.navbar li {
+  margin-left: 15px;
+}
+
+.sosyal-icon {
+  width: 30px;
+  height: 30px;
+  transition: transform 0.3s ease;
+}
+
+.sosyal-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Kart Stili */
+.card {
+  background: var(--card-bg);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  display: none;
+}
+
+.card-title {
+  color: var(--text-color);
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+}
+
+.card-text {
+  color: var(--text-color);
+  margin-bottom: 20px;
+}
+
+/* İstatistik Öğeleri */
+.stats-item {
+  background: var(--light-bg);
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.stats-item i {
+  margin-right: 10px;
+  font-size: 1.2rem;
+}
+
+.earnings {
+  font-size: 1.8rem;
+  color: var(--success);
+  font-weight: bold;
+  text-align: center;
+  margin: 15px 0;
+}
+
+/* Butonlar */
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--white);
+  padding: 8px 20px;
+  font-size: 1rem;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+/* Yükleniyor ve Hata Mesajları */
+#loading {
+  text-align: center;
+  margin-top: 20px;
+  display: none;
+}
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+.alert {
+  border-radius: 5px;
+  padding: 15px;
+  margin-top: 15px;
+  display: none;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+/* Animasyonlar */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ana-baslik {
+    font-size: 2rem;
+  }
+  
+  .input-field {
+    height: 60px;
+  }
+  
+  .input-field .searchTerm {
+    font-size: 16px;
+  }
+  
+  .mobil {
+    font-size: 1rem;
+  }
+  
+  h3.mobil {
+    font-size: 1.8rem;
+  }
+  
+  .sag-kose {
+    top: 10px;
+    right: 10px;
+  }
+  
+  .sosyal-icon {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .navbar li {
+    margin-left: 10px;
+  }
+}
+
+@media (max-width: 576px) {
+  .ana-baslik {
+    font-size: 1.6rem;
+  }
+  
+  .input-field {
+    height: 50px;
+  }
+  
+  .input-field .searchTerm {
+    padding: 10px 32px 10px 60px;
+    font-size: 14px;
+  }
+  
+  .input-field.second-wrap {
+    width: 50px;
+  }
+  
+  .youtuber-logo {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .row {
+    margin: 0;
+  }
+}
+
+/* Dark mode ayarları (gelecekte eklenebilir) */
+@media (prefers-color-scheme: dark) {
+  /* Dark mode stilleri */
+} 

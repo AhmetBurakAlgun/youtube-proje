@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <title>Youtuberlar Ne Kadar Kazanıyor ? - YoutuberLand.com</title>
+  <meta name="description" content="Youtuberların istatistikleri, ortalama kazançları merak ediliyor, youtuberlar ne kadar para kazanıyor, en fazla para kazanan youtuber gibi soruları güncel olarak cevaplıyoruz" />
+  <meta name="keywords" content="en fazla para kazanan youtuber, youtuberlar ne kazanıyor, youtuberlar kaç tl kazanıyor, youtuberlar kaç para kazanıyor, youtuber kazançları 2023, youtuberlar ayda kaç tl kazanıyor, en fazla abonesi olan youtuber, youtuber kazançları, youtube istatistikleri">
+  <meta name="author" content="A.Burak Algün">
+  <meta name="subject" content="Youtuber İstatistikleri & Youtuber Kazançları">
+
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  <!-- CORS Policy için gerekli ayarlar -->
+  <meta http-equiv="Content-Security-Policy" content="img-src * data: blob: 'unsafe-inline'; default-src 'self' https:; script-src 'self' https: 'unsafe-inline'; style-src 'self' https: 'unsafe-inline'; font-src 'self' https: data:;">
+  <meta http-equiv="Referrer-Policy" content="no-referrer-when-downgrade">
+
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" alt="youtuberland-favicon"/>
+  
+  <link href="https://fonts.googleapis.com/css?family=Oxanium:300,400,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="css/omain.css"/>
+  <link rel="stylesheet" href="css/main.css"/>
+  <link rel="stylesheet" href="css/youtube.css">
+  <link rel="stylesheet" href="css/pencere.css">
+  
+  <style>
+  
+      
+    /* Sonuç kartı */
+    .card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
+    
+    .stats-item {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .stats-item i {
+      margin-right: 10px;
+      font-size: 1.2rem;
+    }
+    
+    .earnings {
+      font-size: 1.8rem;
+      color: #28a745;
+      font-weight: bold;
+      text-align: center;
+      margin: 15px 0;
+    }
+    
+    /* Animasyonlar */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-10px); }
+    }
+    
+   
+    
+    /* Banner yükleme hatası durumu için stil */
+    .youtuber-banner-alan img#banner.error {
+      background-color: #f8f9fa;
+      border: 1px dashed #ddd;
+      object-fit: contain; /* Hata durumunda otomatik oluşturulan banner için */
+    }
+    
+    /* Otomatik oluşturulan banner için stil */
+    .youtuber-banner-alan img#banner.auto-banner {
+      object-position: center center; /* Otomatik oluşturulan banner için tam merkez */
+      height: 250px; /* 300px'den 250px'e düşürüldü - sabit yükseklikte görüntüle */
+    }
+    
+    
+    .youtuber-logo-alan img#thumbnail {
+
+    }
+    
+    /* İçerik alanını logo ile çakışmasın diye aşağı itiyoruz */
+    .row {
+      padding-top: 20px; /* İçerik ile banner arasında boşluk */
+    }
+
+    /* YouTube Stili Banner Sınıfları */
+    .yt-core-image {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .yt-core-image--fill-parent-height {
+      height: 100%;
+      flex: 1;
+    }
+
+    .yt-core-image--fill-parent-width {
+      width: 100%;
+    }
+
+    .yt-core-image--content-mode-scale-aspect-fill {
+      object-fit: cover;
+    }
+
+    /* Tooltip CSS - sadece CSS ile çalışır, JavaScript gerekmez */
+    .tooltip-container:hover #tooltip-content {
+      visibility: visible;
+    }
+
+    /* Tooltip görünürlüğü */
+    .tooltip-container:hover .tooltip-content {
+      visibility: visible;
+    }
+    
+    /* Tooltip ok işareti */
+    .tooltip-content::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: rgba(0,0,0,0.8) transparent transparent transparent;
+    }
+
+    /* Bilgi butonu üzerine gelindiğinde tooltip göster */
+    .info-button:hover .info-tooltip {
+      display: block !important;
+    }
+    
+    /* Tooltip ok işareti */
+    .info-tooltip::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: rgba(0,0,0,0.8) transparent transparent transparent;
+    }
+
+    /* Bilgi butonu üzerine gelindiğinde kanal açıklamasını göster - artık JavaScript ile yapılıyor */
+    /*
+    #info-button:hover + .channel-description-container,
+    #info-button:hover ~ .channel-description-container,
+    .channel-description-container:hover {
+      display: block !important;
+      z-index: 2000 !important;
+    }
+    */
+    
+    /* Kanal açıklama alanı stillemeleri */
+    .channel-description-container {
+      animation: fadeIn 0.3s ease;
+    }
+
+
+    .stat-icon {
+      vertical-align: middle;
+      font-size: 22px;
+      margin-left: 5px;
+      line-height: 1px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="s130">
+    <div class="container">
+      <a href="/">
+        <h1 id="asagi" class="ana-baslik">Youtuberlar Ne Kazanıyor ?</h1>
+      </a>
+      
+      <!-- Navigasyon menüsü -->
+      <div class="nav-links" style="text-align: center; margin-bottom: 20px;">
+        <a href="/" style="color: white; margin: 0 10px;">Ana Sayfa</a>
+        <a href="#" id="api-quotas-link" style="color: white; margin: 0 10px;">API Kotaları</a>
+      </div>
+      
+      <form id="deneme" class="row">
+        <div class="inner-form">
+          <div class="input-field first-wrap">
+            <div class="svg-wrapper" id="div1">
+              <img src="images/icon.png" alt="youtube-icon">
+            </div>
+            <input class="searchTerm" id="search" type="search" placeholder="Youtube Kanal Adı, ID veya Kullanıcı Adı giriniz" required>
+          </div>
+          <div class="input-field second-wrap">
+            <button id="submit" class="btn-search" type="submit"><i class="material-icons right">play_arrow</i></button> 
+          </div>
+        </div>
+      </form>
+
+      <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+        <p>Yükleniyor...</p>
+      </div>
+      
+      <div id="error-message" style="display: none; color: #ff3333; background: rgba(255,255,255,0.2); padding: 10px; border-radius: 5px; margin-top: 20px; text-align: center;">
+      </div>
+
+      <!-- Tek bir temiz kanal banner ve logo alanı -->
+      <div class="youtuber-banner-alan">
+        <img id="banner" alt="Kanal Banner" crossorigin="anonymous">
+        <div class="youtuber-logo-alan">
+          <img id="thumbnail" src="" alt="Kanal Profil Fotoğrafı" crossorigin="anonymous">
+          <div style="display:inline-flex; align-items: center; position: relative; justify-content: center; top:-82px;">
+            <h4 id="title-inline" style="margin:0; color: white; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);"></h4>
+            <!-- Basit info butonu -->
+            <div id="info-button" style="margin-left: 8px; cursor: pointer; background-color: rgba(255,255,255,0.8); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #333; box-shadow: 0 1px 3px rgba(0,0,0,0.3); position: relative;" data-toggle="description" data-target=".channel-description-container">
+              <i class="material-icons" style="font-size: 16px;">info</i>
+              <div class="info-tooltip" id="info-tooltip" style="display: none; position: absolute; top: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; white-space: nowrap; z-index: 1000;">
+                <p style="margin: 0; padding: 0;">Kanal İstatistikleri</p>
+              </div>
+            </div>
+            
+            <!-- Kanal Açıklama Alanı (Yeni Konum) -->
+            <div class="channel-description-container" style="position: absolute; top: 30px; right: -400px; background: rgba(0,0,0,0.9); color: white; padding: 15px; border-radius: 8px; width: 400px; max-width: 90vw; z-index: 2000; display: none; box-shadow: 0 3px 8px rgba(0,0,0,0.5); pointer-events: auto;">
+              <h5 style="margin-top: 0; margin-bottom: 10px; font-size: 16px; font-weight: bold; text-align: center;">Kanal Açıklaması</h5>
+              <p id="channel-description" style="margin: 0; font-size: 14px; line-height: 1.5; max-height: 300px; overflow-y: auto;">Kanal açıklaması burada görünecek</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Kanal İstatistikleri Alanı -->
+        <div class="youtuber-description-alan" style="display: none;">
+          <div class="stats-container">
+            <div class="stat-item">
+              <h6>Abone Sayısı</h6>
+              <div style="display: inline-block; font-size: 18px; font-weight: 700; margin-right: 5px;" id="description-subscriber"></div><i class="material-icons stat-icon" style="vertical-align: middle; font-size: 22px; margin-left: 5px; line-height: 1px;">person</i>
+            </div>
+            <div class="stat-item">
+              <h6>Toplam İzlenme</h6>
+              <div style="display: inline-block; font-size: 18px; font-weight: 700; margin-right: 5px;" id="description-views"></div><i class="material-icons stat-icon" style="vertical-align: middle; font-size: 22px; margin-left: 5px; line-height: 1px;">visibility</i>
+            </div>
+            <div class="stat-item">
+              <h6>Toplam Video</h6>
+              <div style="display: inline-block; font-size: 18px; font-weight: 700; margin-right: 5px;" id="description-videos"></div><i class="material-icons stat-icon" style="vertical-align: middle; font-size: 22px; margin-left: 5px; line-height: 1px;">videocam</i>
+            </div>
+            <div class="stat-item">
+              <h6>Kanal Yaşı</h6>
+              <div style="display: inline-block; font-size: 18px; font-weight: 700; margin-right: 5px;" id="description-age"></div><i class="material-icons stat-icon" style="vertical-align: middle; font-size: 22px; margin-left: 5px; line-height: 1px;">cake</i>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Para alanını korumak için -->
+      <div style="margin-top:100px; text-align: center;">
+        <h3 class="center-align no-margin" id="para"></h3>
+      </div>
+    </div>
+    
+    <div id="id-git" class="sag-kose">
+      <ul class="navbar">
+        <li class=""><a target="_blank" href="https://www.instagram.com/youtuberland.com_/"><img alt="Youtuberland Instagram" class="sosyal-icon" src="images/sosyal/instagram.svg"></a></li>
+        <li class=""><a target="_blank" href="https://www.youtube.com/channel/UCpo_u5omesrVyi2RGKxwKQQ/featured"><img alt="Youtuberland Youtube" class="sosyal-icon" src="images/sosyal/youtube.svg"></a></li>
+        <li class=""><a target="_blank" href="https://www.facebook.com/youtuberland.c0m/?modal=admin_todo_tour"><img alt="Youtuberland Facebook" class="sosyal-icon" src="images/sosyal/facebook.svg"></a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- API Kotaları Modal -->
+  <div id="api-quotas-modal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; overflow: auto;">
+    <div class="modal-content" style="background-color: #fff; margin: 10% auto; padding: 20px; width: 80%; max-width: 800px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+      <span class="close" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+      <h2 style="margin-top: 0; color: #333;">YouTube API Kota Takibi</h2>
+      
+      <div id="api-quotas-loading" style="text-align: center; padding: 20px;">
+        <p>API kotaları kontrol ediliyor...</p>
+      </div>
+      
+      <div id="api-quotas-error" style="display: none; color: red; padding: 10px; background-color: #ffeeee; border-radius: 5px; margin-bottom: 15px;">
+        <p>Hata mesajı burada görünecek</p>
+      </div>
+      
+      <div id="api-quotas-container" style="display: none;">
+        <div class="quota-summary" style="display: flex; justify-content: space-around; margin-bottom: 20px; text-align: center; background-color: #f8f9fa; padding: 15px; border-radius: 8px;">
+          <div>
+            <h3 style="margin: 0; color: #333;">Toplam API Anahtarı</h3>
+            <p id="total-keys" style="font-size: 24px; font-weight: bold; margin: 5px 0; color: #4285F4;">0</p>
+          </div>
+          <div>
+            <h3 style="margin: 0; color: #333;">Aktif Anahtarlar</h3>
+            <p id="active-keys" style="font-size: 24px; font-weight: bold; margin: 5px 0; color: #0F9D58;">0</p>
+          </div>
+          <div>
+            <h3 style="margin: 0; color: #333;">Limit Aşılan</h3>
+            <p id="exceeded-keys" style="font-size: 24px; font-weight: bold; margin: 5px 0; color: #DB4437;">0</p>
+          </div>
+        </div>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+          <thead>
+            <tr style="background-color: #4285F4; color: white;">
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">API Anahtarı</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Durum</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Kota Kullanımı</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Son Kontrol</th>
+            </tr>
+          </thead>
+          <tbody id="api-keys-list">
+            <!-- API anahtarları buraya dinamik olarak eklenecek -->
+          </tbody>
+        </table>
+        
+        <div style="margin-top: 20px; text-align: right;">
+          <button id="refresh-quotas" style="background-color: #4285F4; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">Yenile</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    function Next() {
+      var blnNext = true;
+      var form = document.getElementById('deneme');
+      var div = document.getElementById('div1');
+      var inputs = div.querySelectorAll('input[type="text"]');
+      for (index = 0; index < inputs.length; ++index) {
+        if (!inputs[index].validity.valid) {
+          blnNext = false;
+          form.querySelectorAll('input[type="submit"]')[0].click(); //Force the form to try and submit so we get error messages
+        }
+      }
+      if (blnNext) {
+        document.getElementById('id-git').style.display = 'none';
+        document.getElementById('asagi').style.marginTop = '90px';
+        document.getElementById('asagi').style.transition = 'all 0.4s ease';
+      }
+    }
+  </script>
+  <script src="script.js"></script>
+  <script>
+    // API Kotaları Modal
+    document.addEventListener('DOMContentLoaded', function() {
+      const modalBtn = document.getElementById('api-quotas-link');
+      const modal = document.getElementById('api-quotas-modal');
+      const closeBtn = modal.querySelector('.close');
+      const refreshBtn = document.getElementById('refresh-quotas');
+      
+      // Modal açma fonksiyonu
+      modalBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        modal.style.display = 'block';
+        fetchApiQuotas();
+      });
+      
+      // Modal kapatma fonksiyonu
+      closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+      });
+      
+      // Modal dışına tıklandığında kapatma
+      window.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+      
+      // Kota verilerini yenileme
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', fetchApiQuotas);
+      }
+      
+      // API Kotalarını sunucudan al
+      function fetchApiQuotas() {
+        const loadingEl = document.getElementById('api-quotas-loading');
+        const errorEl = document.getElementById('api-quotas-error');
+        const containerEl = document.getElementById('api-quotas-container');
+        const totalKeysEl = document.getElementById('total-keys');
+        const activeKeysEl = document.getElementById('active-keys');
+        const exceededKeysEl = document.getElementById('exceeded-keys');
+        const keysListEl = document.getElementById('api-keys-list');
+        
+        // Yükleniyor göster, diğerlerini gizle
+        loadingEl.style.display = 'block';
+        errorEl.style.display = 'none';
+        containerEl.style.display = 'none';
+        
+        // Sunucudan API kota verilerini al
+        fetch('/api/api-quotas')
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`Sunucu hatası: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            // Yükleniyor'u gizle, içeriği göster
+            loadingEl.style.display = 'none';
+            containerEl.style.display = 'block';
+            
+            // Özet bilgileri güncelle
+            totalKeysEl.textContent = data.totalKeys || 0;
+            activeKeysEl.textContent = data.activeKeys || 0;
+            exceededKeysEl.textContent = data.results.filter(key => key.status === 'quota_exceeded').length;
+            
+            // API anahtarları listesini temizle
+            keysListEl.innerHTML = '';
+            
+            // Her API anahtarı için tablo satırı oluştur
+            data.results.forEach(keyData => {
+              const row = document.createElement('tr');
+              
+              // Durum rengini ayarla
+              let statusColor = '';
+              let statusText = '';
+              
+              switch (keyData.status) {
+                case 'active':
+                  statusColor = '#0F9D58'; // Yeşil
+                  statusText = 'Aktif';
+                  break;
+                case 'quota_exceeded':
+                  statusColor = '#DB4437'; // Kırmızı
+                  statusText = 'Kota Aşıldı';
+                  break;
+                case 'invalid_key':
+                  statusColor = '#F4B400'; // Sarı
+                  statusText = 'Geçersiz Anahtar';
+                  break;
+                default:
+                  statusColor = '#757575'; // Gri
+                  statusText = 'Hata';
+              }
+              
+              // Kota kullanım bilgisi
+              let quotaInfo = '';
+              if (keyData.status === 'active') {
+                quotaInfo = `${keyData.quotaUsed} / ${keyData.quotaLimit}`;
+              } else {
+                quotaInfo = keyData.errorDetails || 'Bilgi yok';
+              }
+              
+              // Son kontrol zamanı
+              const lastChecked = new Date(keyData.lastChecked).toLocaleString('tr-TR');
+              
+              // HTML içeriği
+              row.innerHTML = `
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">${keyData.keyId} (${keyData.key})</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd; color: ${statusColor}; font-weight: bold;">${statusText}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">${quotaInfo}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">${lastChecked}</td>
+              `;
+              
+              keysListEl.appendChild(row);
+            });
+          })
+          .catch(error => {
+            // Hata göster
+            loadingEl.style.display = 'none';
+            errorEl.style.display = 'block';
+            errorEl.querySelector('p').textContent = error.message || 'API kotaları alınırken hata oluştu.';
+          });
+      }
+    });
+  </script>
+</body>
+</html> 

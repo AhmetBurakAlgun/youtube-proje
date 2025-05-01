@@ -1,0 +1,1442 @@
+// API temel URL'si
+const API_URL = '/api';
+
+// Mevcut arama sonuçları - bu değişkeni arama öncesi temizleyeceğiz
+let currentSearchResults = null;
+
+// YENİ: Banner önbellekleme için basit bir cache sistemi ekleyelim
+const bannerCache = {
+  cache: new Map(), // Kanal ID -> Banner URL eşlemesi
+  
+  // Banner URL'sini cache'e ekle
+  set: function(channelId, bannerUrl) {
+    if (!channelId) return;
+    
+    // null, false, veya URL olabilir - hepsini önbelleğe al
+    console.log(`Banner bilgisi önbelleğe alınıyor: ${channelId} => ${bannerUrl ? (typeof bannerUrl === 'string' ? bannerUrl.substring(0, 30) + '...' : bannerUrl) : 'null/false'}`);
+    
+    this.cache.set(channelId, {
+      url: bannerUrl,
+      timestamp: Date.now()
+    });
+  },
+  
+  // Cache'den banner URL'sini getir (varsa)
+  get: function(channelId) {
+    if (!channelId) return null;
+    
+    const cached = this.cache.get(channelId);
+    if (!cached) return null;
+    
+    // Önbellek süresi kontrolü (1 saat)
+    const cacheTimeMs = 60 * 60 * 1000; // 1 saat
+    if (Date.now() - cached.timestamp > cacheTimeMs) {
+      console.log(`Önbellekteki banner bilgisi süresi dolmuş: ${channelId}`);
+      this.cache.delete(channelId);
+      return null;
+    }
+    
+    console.log(`Banner bilgisi önbellekten alındı: ${channelId}`);
+    return cached.url; // false, null veya URL string olabilir
+  },
+  
+  // Cache'i temizle
+  clear: function() {
+    this.cache.clear();
+  }
+};
+
+// DOM yüklendikten sonra çalışacak kod
+document.addEventListener('DOMContentLoaded', function() {
+  // Arama formunu ayarla
+  setupSearchForm();
+  
+  // Arama kutusuna odaklandığında içeriği temizleme işlemini ayarla
+  setupSearchInput();
+});
+
+// Arama formunu ayarla
+function setupSearchForm() {
+  console.log('Arama formu ayarlanıyor...');
+  const searchForm = document.getElementById('deneme');
+  if (!searchForm) {
+    console.error('deneme ID\'li form bulunamadı!');
+    return;
+  }
+  
+  // Input doğrulama için özel bir olay dinleyici
+  const searchInput = document.getElementById('search');
+  if (searchInput) {
+    searchInput.addEventListener('invalid', function() {
+      showError('Lütfen bir kanal URL\'si veya adı girin.');
+    });
+  }
+  
+  // Form submit olayını engelleme
+    searchForm.addEventListener('submit', async function(e) {
+    // Sayfanın yenilenmesini engelleyen en önemli satır
+    e.preventDefault();
+    console.log('Form gönderimi engellendi, AJAX isteği başlatılıyor...');
+    
+    // Sonuçları temizle
+    resetResults();
+    
+    // Arama değerini al
+    const channelUrl = searchInput ? searchInput.value.trim() : '';
+    if (!channelUrl) {
+      showError('Lütfen bir kanal URL\'si veya adı girin.');
+      return;
+    }
+    
+    // Logo animasyonu ve yükleniyor göstergesi
+    applySearchAnimation();
+    showLoading();
+    
+    try {
+      // Kanalı ara ve verileri göster
+      const channelData = await searchChannel(channelUrl);
+      if (channelData) {
+        currentSearchResults = channelData;
+        fillChannelData(channelData);
+      }
+    } catch (error) {
+      console.error('Arama işlemi sırasında hata:', error);
+      showError(error.message || 'Bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      hideLoading();
+    }
+  });
+  
+  // Submit butonuna tıklama için ekstra güvenlik
+  const submitButton = document.getElementById('submit');
+  if (submitButton) {
+    submitButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      // Form gönderme olayını manuel tetikle
+      const event = new Event('submit', {
+        'bubbles': true,
+        'cancelable': true
+      });
+      searchForm.dispatchEvent(event);
+    });
+  }
+}
+
+// Arama kutusunu ayarla
+function setupSearchInput() {
+  const searchInput = document.getElementById('search');
+  if (!searchInput) return;
+  
+  searchInput.addEventListener('focus', function() {
+    // Input'a odaklandığında form verilerini sıfırla
+    if (this.value) {
+      this.value = '';
+      resetResults();
+    } else {
+      // Banner alanını gizle (boş alan gösterilmemeli)
+      const bannerArea = document.querySelector('.youtuber-banner-alan');
+      if (bannerArea) bannerArea.style.display = 'none';
+      
+      // Metin alanlarını temizle
+      document.querySelectorAll('#title, #subscriber, #totalviews, #totalvideos, #para').forEach(el => {
+        if (el) el.innerHTML = '';
+      });
+    }
+  });
+}
+
+// Arama sonuçlarını sıfırla
+function resetResults() {
+  console.log('Arama sonuçları sıfırlanıyor...');
+      currentSearchResults = null;
+      
+  // Banner ve thumbnail alanlarını temizle
+  const banner = document.getElementById('banner');
+  if (banner) {
+    // Event listener'ları temizle (bellek sızıntısını önle)
+    banner.onload = null;
+    banner.onerror = null;
+    // src'yi temizle (böylece yeni aynı resim tekrar yüklenebilir)
+    banner.src = '';
+    banner.style.animation = 'none'; // Animasyonları temizle
+  }
+  
+      const thumbnail = document.getElementById('thumbnail');
+      if (thumbnail) {
+    // Event listener'ları temizle
+    thumbnail.onload = null;
+    thumbnail.onerror = null;
+    // src'yi temizle
+    thumbnail.src = '';
+    thumbnail.style.animation = 'none'; // Animasyonları temizle
+    thumbnail.style.opacity = '1'; // Opaklığı sıfırla
+      }
+      
+      // Metin içeriklerini temizle
+      document.querySelectorAll('#title, #subscriber, #totalviews, #totalvideos, #para').forEach(el => {
+        if (el) el.innerHTML = '';
+      });
+      
+  // Banner alanını GİZLE (boş banner gösterilmemeli)
+  const bannerArea = document.querySelector('.youtuber-banner-alan');
+  if (bannerArea) {
+    bannerArea.style.display = 'none';
+    // Mevcut tüm geçiş efektlerini temizle
+    bannerArea.style.transition = 'none';
+    // Yeniden akışı sağlamak için bir mikrosaniye bekle
+    setTimeout(() => {
+      bannerArea.style.transition = 'all 0.3s ease';
+    }, 1);
+  }
+  
+  // Logo alanını sıfırla ama görünür tut
+  const logoArea = document.querySelector('.youtuber-logo-alan');
+  if (logoArea) {
+    logoArea.style.display = 'block'; // Logo alanını her zaman görünür tut
+    logoArea.style.opacity = '1'; // Tam görünür
+  }
+  
+  // Yükleme öncesi görsel için önbelleği devre dışı bırakmak için bir zaman damgası ekle
+  const timestamp = new Date().getTime();
+  
+  // Hata mesajını gizle
+  const errorElement = document.getElementById('error-message');
+  if (errorElement) {
+    errorElement.style.display = 'none';
+    errorElement.innerHTML = '';
+  }
+}
+
+// Arama animasyonları
+function applySearchAnimation() {
+  // Logo animasyonları
+  const asagi = document.getElementById('asagi');
+      if (asagi) {
+        asagi.style.marginTop = '30px';
+        asagi.style.transition = 'all 0.4s ease';
+      }
+      
+  // Sosyal medya ikonlarını gizle
+  const idGit = document.getElementById('id-git');
+  if (idGit) {
+    idGit.style.display = 'none';
+  }
+}
+
+// Kanal arama isteği gönder
+async function searchChannel(channelUrl) {
+  // Önbelleği devre dışı bırakmak için zaman damgası ekleyelim
+  const timestamp = new Date().getTime();
+  const randomParam = Math.random().toString(36).substring(2, 15);
+  
+  // API'ye istek gönder
+  const searchUrl = `${API_URL}/channels?url=${encodeURIComponent(channelUrl)}&_t=${timestamp}&_r=${randomParam}`;
+  console.log(`Arama URL'si: ${searchUrl}`);
+        
+  const response = await fetch(searchUrl, {
+    method: 'GET',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    },
+    cache: 'no-store'
+  });
+  
+  if (!response.ok) {
+    console.log(`Kanal arama API hatası: ${response.status}`);
+    throw new Error(`Kanal bilgileri alınamadı. Hata kodu: ${response.status}`);
+  }
+  
+  // API yanıtını al
+  const data = await response.json();
+  console.log('API yanıtı:', data);
+  
+  // Kategori analizi verilerini kontrol et
+  if (data.channel && data.channel.earnings && data.channel.earnings.categoryInfo) {
+    console.log("🏷️ KATEGORİ ANALİZİ SONUCU:", data.channel.earnings.categoryInfo.type);
+    console.log("🎯 KATEGORİ GÜVEN ORANI:", data.channel.earnings.categoryInfo.confidence + "%");
+    console.log("💵 KATEGORİ CPM ÇARPANI:", data.channel.earnings.multipliers.category);
+  } else {
+    console.log("⚠️ KATEGORİ ANALİZİ SONUÇLARI BULUNAMADI!");
+  }
+  
+  // Kota kullanımı bilgisi varsa tarayıcı konsolunda göster
+  if (data.apiQuotaUsage) {
+    console.group('📊 YouTube API KOTA KULLANIMI');
+    console.log(`%c Toplam Kota Kullanımı: ${data.apiQuotaUsage.total} birim`, 'font-weight: bold; font-size: 14px; color: orange;');
+    
+    if (data.apiQuotaUsage.details && data.apiQuotaUsage.details.length > 0) {
+      console.log('Detaylı Kota Kullanımı:');
+      const tableData = data.apiQuotaUsage.details.map(detail => ({
+        'İşlem': detail.operation,
+        'API Uç Noktası': detail.endpoint,
+        'Kota (birim)': detail.cost,
+        'Süre (ms)': detail.time
+      }));
+      console.table(tableData);
+    }
+    
+    // Günlük kota limiti (standart anahtar için)
+    const dailyQuotaLimit = 10000;
+    const quotaPercentage = (data.apiQuotaUsage.total / dailyQuotaLimit) * 100;
+    
+    console.log(`%c Bu sorgu toplam günlük kotanın yaklaşık %${quotaPercentage.toFixed(2)}'ini kullandı`, 
+      `color: ${quotaPercentage > 10 ? 'red' : 'green'}; font-weight: bold;`);
+    console.log('ℹ️ YouTube API\'nin günlük 10,000 birim kota limiti vardır.');
+    console.groupEnd();
+  }
+  
+  // Yanıtı kontrol et
+  if (!data) {
+    console.log('API yanıtı boş');
+    throw new Error('Kanal bilgileri alınamadı. Sunucu boş yanıt döndürdü.');
+  }
+  
+  // API yanıt formatını kontrol et
+  if (data.channels && data.channels.length > 0) {
+    console.log('Kanallar bulundu:', data.channels);
+    return data.channels[0];
+  } else if (data.channel) {
+    console.log('Kanal bulundu:', data.channel);
+    return data.channel;
+  } else {
+    console.log('API yanıtı beklenen formatta değil:', data);
+    throw new Error('Kanal bulunamadı veya API beklenmedik bir formatta yanıt verdi.');
+  }
+}
+
+// YENİ: Görsel optimizasyonu için eklenen fonksiyon
+function optimizeImage(imgElement) {
+  // İlk aratılan kanalın banner kalitesi sorununu çözmek için
+  // Banner görsellerinde, sayfanın her yeniden yüklenmesinde ilk aratılan kanal için
+  // optimizasyonu tamamen atlıyoruz - böylece ilk aratmada ham kalitede görünür
+  
+  // Sadece banner'lar için ve sayfa yüklenmesinden bu yana ilk aratmada optimizasyonu atla
+  if (imgElement.id === 'banner' && !window.bannerOptimizationPerformed) {
+    console.log('İlk aratılan kanalın banner\'ı için optimizasyon atlanıyor (yüksek kalite için)');
+    window.bannerOptimizationPerformed = true;
+    return; // İlk seferde optimizasyon yapma
+  }
+  
+  // Görsel zaten yüklendiyse optimize et
+  if (imgElement.complete) {
+    performOptimization();
+  } else {
+    // Görsel henüz yüklenmediyse, yüklendikten sonra optimize et
+    const originalOnload = imgElement.onload;
+    imgElement.onload = function() {
+      performOptimization();
+      // Orijinal onload fonksiyonunu çağır
+      if (originalOnload) originalOnload.call(this);
+    };
+  }
+  
+  // Optimizasyon işlemini gerçekleştir
+  function performOptimization() {
+    try {
+      // Görsel zaten optimize edilmişse tekrar işleme
+      if (imgElement.dataset.optimized === 'true') return;
+      
+      // Orijinal görsel boyutları
+      const width = imgElement.naturalWidth;
+      const height = imgElement.naturalHeight;
+      
+      // Görsel çok büyükse boyutunu küçült (özellikle banner için)
+      let targetWidth = width;
+      let targetHeight = height;
+      
+      // Eğer bir banner ise (250px yükseklikte gösteriliyor)
+      if (imgElement.id === 'banner' && height > 250) {
+        // Banner'ın oranına göre genişliği hesapla
+        const aspectRatio = width / height;
+        
+        // En-boy oranını koruyarak hedef boyutları hesapla
+        // 250px yükseklikte gösterdiğimiz için, buna göre genişlik hesaplanmalı
+        targetHeight = Math.min(height, 500); // Maks 2x görüntüleme yüksekliği 
+        targetWidth = Math.floor(targetHeight * aspectRatio);
+        
+        // Genişlik belli bir sınırı aşmasın (çok yüksek çözünürlüklü bannerlarda)
+        if (targetWidth > 1440) { // HD+ boyut yeterli
+          targetWidth = 1440;
+          targetHeight = Math.floor(targetWidth / aspectRatio);
+        }
+      } 
+      // Logo/thumbnail ise (daha küçük olmalı)
+      else if (imgElement.id === 'thumbnail') {
+        // Thumbnail 80x80 px olarak gösteriliyor, max 160x160 yeterli
+        const MAX_THUMBNAIL_SIZE = 160;
+        if (width > MAX_THUMBNAIL_SIZE || height > MAX_THUMBNAIL_SIZE) {
+          if (width > height) {
+            targetWidth = MAX_THUMBNAIL_SIZE;
+            targetHeight = Math.floor(height * (MAX_THUMBNAIL_SIZE / width));
+          } else {
+            targetHeight = MAX_THUMBNAIL_SIZE;
+            targetWidth = Math.floor(width * (MAX_THUMBNAIL_SIZE / height));
+          }
+        }
+      }
+      
+      // Orijinal boyut ve hedef boyut aynıysa optimizasyona gerek yok
+      // Sadece yüksek oranda küçültme yapılacaksa gerçekleştir
+      const significantResize = 
+        width > targetWidth * 1.2 || // En az %20 daha büyükse küçült
+        height > targetHeight * 1.2 || 
+        width * height > 1000000; // 1 megapiksel üzeriyse mutlaka optimize et
+        
+      if (!significantResize) {
+        console.log(`${imgElement.id} optimizasyona gerek yok: ${width}x${height}`);
+        return; // Optimize etmeden çık
+      }
+      
+      // Canvas oluştur
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Yeni boyutları ayarla
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      
+      // Anti-aliasing etkinleştir (daha kaliteli küçültme için)
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      // Görüntüyü canvas'a çiz (boyutlandırarak)
+      ctx.drawImage(imgElement, 0, 0, targetWidth, targetHeight);
+      
+      // Optimizasyon yapıldığını işaretle
+      imgElement.dataset.optimized = 'true';
+      
+      // Banner için JPEG, thumbnail için PNG (şeffaflık için)
+      const imageFormat = imgElement.id === 'thumbnail' ? 'image/png' : 'image/jpeg';
+      
+      // Tüm görseller için daha yüksek kalite faktörü kullan (0.85 -> 0.9)
+      const qualityFactor = 0.9;
+      
+      // Optimize edilmiş data URL oluştur
+      const dataUrl = canvas.toDataURL(imageFormat, qualityFactor);
+      
+      // Dosya boyutunu yaklaşık olarak hesapla (bayt cinsinden)
+      const aproximateSize = Math.round(dataUrl.length * 0.75); // base64, orjinal boyutun ~%75'i
+      const fileSize = (aproximateSize / 1024).toFixed(1); // KB cinsinden
+      
+      // Orijinal src'yi yedekle
+      if (!imgElement.dataset.originalSrc) {
+        imgElement.dataset.originalSrc = imgElement.src;
+      }
+      
+      // Optimize edilmiş görüntüyü atama
+      imgElement.src = dataUrl;
+      console.log(`${imgElement.id} optimize edildi: ${width}x${height} → ${targetWidth}x${targetHeight}, ${fileSize}KB, kalite: ${qualityFactor}`);
+    } catch (error) {
+      console.error('Görsel optimizasyonu başarısız:', error);
+      // Hata durumunda orijinal görüntüyü kullan
+    }
+  }
+}
+
+// Kanal verilerini dolduran fonksiyon - Banner ve Logo stillemesi için düzenlenmiş
+function fillChannelData(channel) {
+  console.log('Kanal verileri doldurulacak:', channel);
+  
+  // Test amaçlı log
+  if (channel.earnings && channel.earnings.categoryInfo) {
+    console.log("📋 KATEGORİ BİLGİLERİ DOLDURULACAK:", channel.earnings.categoryInfo);
+  }
+  
+  try {
+    // Veri kontrolü yap - eğer kanal yoksa hata göster
+    if (!channel) {
+      console.error('Kanal verisi bulunamadı');
+      showError('Kanal verisi bulunamadı.');
+      return;
+    }
+
+    // Container elementleri
+    const $channelCard = document.getElementById('channelCard');
+    const $channelHeader = document.getElementById('channelHeader');
+  // Özel arkaplan renklerini belirle
+  const channelColors = generateChannelColors(channel.channelTitle);
+  $channelCard.style.background = `linear-gradient(135deg, ${channelColors.primary}, ${channelColors.secondary})`;
+  
+  // Kanal header bilgilerini doldur
+  let headerHTML = `
+    <div class="channel-profile">
+      <img src="${channel.profileUrl || 'img/default-channel.png'}" alt="${channel.channelTitle}" class="profile-image" onerror="this.src='img/default-channel.png'">
+      <div class="channel-info">
+        <h2 class="channel-title">${channel.channelTitle}</h2>
+        <div class="channel-meta">
+          <span class="channel-type">${channel.channelType || 'Kanal'}</span>
+          ${channel.country ? `<span class="channel-country">${channel.country}</span>` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Kanal ile ilgili HTML öğelerini seç
+  const title = document.getElementById('title');
+  const subscriber = document.getElementById('subscriber');
+  const totalviews = document.getElementById('totalviews');
+  const totalvideos = document.getElementById('totalvideos');
+  const para = document.getElementById('para');
+  const thumbnail = document.getElementById('thumbnail');
+  const bannerElement = document.getElementById('banner');
+  const bannerArea = document.querySelector('.youtuber-banner-alan');
+  const logoArea = document.querySelector('.youtuber-logo-alan');
+  
+  // Yeni açıklama alanı elemanlarını seç
+  const descriptionArea = document.querySelector('.youtuber-description-alan');
+  const descriptionText = document.getElementById('channel-description');
+  
+  // Kanal ID, adı ve thumbnail URL'yi belirle
+  const channelId = channel.channelId || channel.id;
+  const kanalAdi = channel.channelTitle || channel.snippet?.title || 'İsimsiz Kanal';
+  const aboneSayisi = channel.subscriberCount || channel.statistics?.subscriberCount || 0;
+  const izlenmeSayisi = channel.viewCount || channel.statistics?.viewCount || 0;
+  const videoSayisi = channel.videoCount || channel.statistics?.videoCount || 0;
+  
+  // YENİ: Verileri gösterme fonksiyonu - Bu fonksiyon banner ve thumbnail yüklendikten sonra çağrılacak
+  const displayChannelData = function() {
+    // İstatistikleri doldur
+    title.innerHTML = '<h6>Kanal Adı</h6>' + kanalAdi;
+    subscriber.innerHTML = '<h6>Abone Sayısı</h6>' + formatNumber(aboneSayisi);
+    totalviews.innerHTML = '<h6>Toplam İzlenme</h6>' + formatNumber(izlenmeSayisi);
+    totalvideos.innerHTML = '<h6>Toplam Video</h6>' + formatNumber(videoSayisi);
+    
+    // Kazanç hesaplamaları
+    const kazancVerileri = hesaplaKazanc(izlenmeSayisi, channel.estimatedEarnings);
+    para.innerHTML = olusturKazancHTML(kazancVerileri);
+    
+    // Kanal açıklamasını işle ve göster
+    const channelDescription = channel.channelDescription || channel.snippet?.description || '';
+    if (channelDescription && channelDescription.trim() !== '') {
+      // Açıklama varsa göster
+      if (descriptionText) {
+        descriptionText.textContent = channelDescription;
+        
+        // Uzun açıklamaları kırp ve "devamını gör" ekle
+        if (channelDescription.length > 300) {
+          const shortDescription = channelDescription.substring(0, 300) + '...';
+          descriptionText.textContent = shortDescription;
+          
+          // Devamını gör/gizle butonu ekle
+          const showMoreButton = document.createElement('button');
+          showMoreButton.textContent = 'Devamını Gör';
+          showMoreButton.style.background = 'transparent';
+          showMoreButton.style.border = '1px solid rgba(255,255,255,0.3)';
+          showMoreButton.style.color = 'white';
+          showMoreButton.style.padding = '5px 10px';
+          showMoreButton.style.borderRadius = '4px';
+          showMoreButton.style.marginTop = '10px';
+          showMoreButton.style.cursor = 'pointer';
+          
+          let isExpanded = false;
+          showMoreButton.addEventListener('click', function() {
+            if (isExpanded) {
+              descriptionText.textContent = shortDescription;
+              showMoreButton.textContent = 'Devamını Gör';
+            } else {
+              descriptionText.textContent = channelDescription;
+              showMoreButton.textContent = 'Daha Az Göster';
+            }
+            isExpanded = !isExpanded;
+          });
+          
+          // Butonu açıklama paragrafından sonra ekle
+          descriptionText.parentNode.appendChild(showMoreButton);
+        }
+      }
+      
+      // Açıklama alanını görünür yap
+      if (descriptionArea) {
+        descriptionArea.style.display = 'block';
+      }
+    } else {
+      // Açıklama yoksa alanı gizle
+      if (descriptionArea) {
+        descriptionArea.style.display = 'none';
+      }
+    }
+  };
+  
+  // Görsel elemanlara başvuru - YENİ SÜRÜM: Daha akıllı yükleme takibi
+  const imageTracker = {
+    bannerLoaded: false,
+    thumbnailLoaded: false,
+    bannerCreating: false,
+    bannerRequested: false,
+    thumbnailRequested: false,
+    totalImages: 2,
+    loadedCount: 0,
+    shown: false,
+    timeoutId: null,
+    
+    // Banner isteği başlat
+    requestBanner: function() {
+      if (this.bannerRequested) return;
+      this.bannerRequested = true;
+      this.startTimeout();
+      
+      // Banner gösterme alanını hazırla
+      bannerArea.style.display = 'none';
+      
+      // Banner URL'sini al ve yüklemeyi başlat
+      console.log('Banner yükleme işlemi başlatılıyor...');
+      this.loadBanner();
+    },
+    
+    // Thumbnail isteği başlat
+    requestThumbnail: function() {
+      if (this.thumbnailRequested) return;
+      this.thumbnailRequested = true;
+      this.startTimeout();
+      
+      // Logo alanını hep görünür tut
+      logoArea.style.display = 'block';
+      
+      // Thumbnail URL'yi belirle
+      const imageUrl = channel.thumbnailUrl || 
+                      (channel.snippet?.thumbnails?.high?.url) || 
+                      (channel.snippet?.thumbnails?.medium?.url) || 
+                      (channel.snippet?.thumbnails?.default?.url);
+      
+      if (imageUrl) {
+        console.log("Thumbnail yükleme işlemi başlatılıyor:", imageUrl);
+        this.loadThumbnail(imageUrl);
+      } else {
+        console.log('Thumbnail URL bulunamadı, varsayılan görsel kullanılıyor');
+        thumbnail.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFeQI6UgG55AAAAABJRU5ErkJggg==';
+        thumbnail.style.opacity = '0.5'; // Yarı saydam göster
+        this.thumbnailLoaded = true;
+        this.checkAndShow(); 
+      }
+    },
+    
+    // Banner yükleme işlemini başlat
+    loadBanner: function() {
+      // ÖNEMLİ: Dinleyicileri temizle, ancak src henüz ayarlama!
+      bannerElement.onload = null;
+      bannerElement.onerror = null;
+      bannerElement.className = ''; // Önceki sınıfları temizle
+      
+      // Banner yükleme olaylarını dinle
+      bannerElement.onload = () => {
+        console.log('Banner başarıyla yüklendi');
+        
+        // Banner stillemesi
+        if (!bannerElement.classList.contains('auto-banner')) {
+          bannerElement.style.objectPosition = 'center 50%';
+          bannerElement.style.height = '250px';
+          bannerElement.style.objectFit = 'cover';
+          bannerElement.style.imageRendering = '-webkit-optimize-contrast';
+        }
+        
+        // Optimizasyon işlemini sonraya ertele
+        setTimeout(() => {
+          if (!bannerElement.dataset.optimized) {
+            optimizeImage(bannerElement);
+          }
+        }, 3000);
+        
+        this.bannerLoaded = true;
+        this.checkAndShow();
+      };
+      
+      bannerElement.onerror = (err) => {
+        console.warn('Banner yüklenirken hata oluştu:', err);
+        
+        // Otomatik banner oluşturma
+        if (!this.bannerCreating) {
+          this.bannerCreating = true;
+          console.log('Otomatik banner oluşturuluyor');
+          
+          createAutomaticBanner(channel, bannerElement, () => {
+            this.bannerLoaded = true;
+            this.checkAndShow();
+          });
+        }
+      };
+      
+      // 🔍 BÜYÜK DEĞİŞİKLİK: Önce kanal nesnesinden banner URL kontrolü
+      const channelBannerUrl = channel.bannerUrl || null;
+      
+      // Banner URL'sini alma işlemi - ÖNEMLİ: Kanal nesnesindeki banner URL'yi de geçir
+      fetchYouTubeBanner(channelId, channelBannerUrl)
+        .then(bannerUrl => {
+          // Otomatik banner süreci başladıysa işlemi iptal et
+          if (this.bannerCreating) return;
+          
+          if (bannerUrl) {
+            console.log('Banner URL kullanılıyor:', bannerUrl);
+            
+            // Banner özelliklerini ayarla
+            bannerElement.crossOrigin = "anonymous";
+            bannerElement.alt = `${kanalAdi} banner`;
+            bannerElement.className = 'yt-core-image yt-core-image--fill-parent-height yt-core-image--fill-parent-width yt-core-image--content-mode-scale-aspect-fill';
+            
+            // URL'yi ata
+            bannerElement.src = bannerUrl;
+          } else {
+            // Banner URL bulunamadı, otomatik oluştur
+            if (!this.bannerCreating) {
+              this.bannerCreating = true;
+              createAutomaticBanner(channel, bannerElement, () => {
+                this.bannerLoaded = true;
+                this.checkAndShow();
+              });
+            }
+          }
+        })
+        .catch(error => {
+          console.error("Banner URL alma hatası:", error);
+          
+          if (!this.bannerCreating) {
+            this.bannerCreating = true;
+            createAutomaticBanner(channel, bannerElement, () => {
+              this.bannerLoaded = true;
+              this.checkAndShow();
+            });
+          }
+        });
+    },
+    
+    // Thumbnail yükleme işlemini başlat
+    loadThumbnail: function(imageUrl) {
+      // Önce kaynağı temizle
+      thumbnail.onload = null;
+      thumbnail.onerror = null;
+      thumbnail.src = '';
+      
+      // Thumbnail yükleme olaylarını dinle
+      thumbnail.onload = () => {
+        console.log('Thumbnail başarıyla yüklendi');
+        // Thumbnail optimize et
+        optimizeImage(thumbnail);
+        this.thumbnailLoaded = true;
+        this.checkAndShow();
+      };
+      
+      thumbnail.onerror = (err) => {
+        console.error('Thumbnail yüklenemedi, hata:', err);
+        
+        // Proxy üzerinden tekrar dene
+        const proxyUrl = `/api/proxy-banner?url=${encodeURIComponent(imageUrl)}`;
+        console.log("Proxy üzerinden thumbnail tekrar deneniyor:", proxyUrl);
+        
+        // Sadece bir kez daha dene, başarısız olursa boş piksel göster
+        thumbnail.onload = () => {
+          console.log('Thumbnail proxy üzerinden başarıyla yüklendi');
+          optimizeImage(thumbnail);
+          this.thumbnailLoaded = true;
+          this.checkAndShow();
+        };
+        
+        thumbnail.onerror = () => {
+          console.error('Thumbnail proxy üzerinden de yüklenemedi');
+          thumbnail.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFeQI6UgG55AAAAABJRU5ErkJggg==';
+          thumbnail.style.opacity = '0.5';
+          this.thumbnailLoaded = true;
+          this.checkAndShow();
+        };
+        
+        thumbnail.crossOrigin = "anonymous";
+        thumbnail.src = proxyUrl;
+      };
+      
+      // Thumbnail'i yüklemeye başla
+      thumbnail.alt = kanalAdi;
+      thumbnail.crossOrigin = "anonymous";
+      
+      // Proxy üzerinden yükle (CORS sorunlarını önle)
+      const proxyUrl = `/api/proxy-banner?url=${encodeURIComponent(imageUrl)}`;
+      thumbnail.src = proxyUrl;
+    },
+    
+    // Tüm görsellerin yüklenip yüklenmediğini kontrol et
+    checkAndShow: function() {
+      // İşlemi iptal et, eğer timeout dolmuşsa
+      if (this.timeoutId === null) return;
+      
+      console.log(`Banner durumu: ${this.bannerLoaded}, Thumbnail durumu: ${this.thumbnailLoaded}`);
+      
+      // Başarıyla yüklenen görselleri say
+      this.loadedCount = 0;
+      if (this.bannerLoaded) this.loadedCount++;
+      if (this.thumbnailLoaded) this.loadedCount++;
+      
+      console.log(`Yüklenen görsel sayısı: ${this.loadedCount}/${this.totalImages}`);
+      
+      // YENİ: Görseller yüklendi, timeout'u temizle
+      if (this.loadedCount === this.totalImages) {
+        this.clearTimeout();
+      }
+      
+      // Görsel yükleme tamamlandı veya zamanaşımı oldu - o zaman alanları göster
+      if ((this.loadedCount === this.totalImages || this.timeoutExpired) && !this.shown) {
+        this.shown = true;
+        
+        // Banner alanını göster
+        bannerArea.style.display = 'block';
+        
+        // Banner ve thumbnail yüklenince animasyon ekle
+        if (bannerElement && bannerElement.complete) {
+          bannerElement.style.animation = 'fadeIn 0.3s';
+        }
+        if (thumbnail && thumbnail.complete) {
+          thumbnail.style.animation = 'fadeIn 0.3s';
+        }
+        
+        // En son kanal verilerini göster
+        displayChannelData();
+      }
+    },
+    
+    // Zamanaşımı başlat - max 5 saniye bekle, sonra verileri göster
+    startTimeout: function() {
+      this.timeoutExpired = false;
+      this.clearTimeout(); // Varsa önceki zamanaşımını temizle
+      
+      this.timeoutId = setTimeout(() => {
+        console.log('Görsel yükleme zaman aşımına uğradı (5 saniye)');
+        this.timeoutExpired = true;
+        this.checkAndShow(); // Zamanaşımı sonrası göster
+      }, 5000); // 5 saniye bekleme süresi
+    },
+    
+    // Zamanaşımını temizle
+    clearTimeout: function() {
+      if (this.timeoutId !== null) {
+        clearTimeout(this.timeoutId);
+        this.timeoutId = null;
+      }
+    }
+  };
+  
+  // YENİ: Önce banner ve PP yükleme işlemlerini başlat
+  // Burada önemli olan, yükleme işlemlerini önce başlatmamız
+  if (channelId && bannerElement) {
+    imageTracker.requestBanner();
+  } else {
+    imageTracker.bannerLoaded = true;
+  }
+  
+  if (thumbnail && logoArea) {
+    imageTracker.requestThumbnail();
+  } else {
+    imageTracker.thumbnailLoaded = true;
+  }
+  
+  // Her iki görsel de yoksa, direkt olarak verileri göster
+  if (!channelId && !bannerElement && !thumbnail && !logoArea) {
+    displayChannelData();
+  }
+} catch (error) {
+  console.error("Kanal verilerini doldurma hatası: ", error);
+  showError("Kanal verilerini işlerken bir hata oluştu.");
+}
+
+// Sayıları formatlı göster (1000 -> 1K, 1000000 -> 1M)
+function formatNumber(num) {
+  if (!num) return "0";
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K';
+  }
+  return num.toString();
+}
+
+// Para miktarını formatlı göster
+function formatMoney(amount) {
+  return amount.toLocaleString();
+}
+
+// Yükleniyor göstergesini göster
+function showLoading() {
+  const loadingElement = document.getElementById('loading');
+  if (loadingElement) {
+    loadingElement.style.display = 'block';
+  }
+}
+
+// Yükleniyor göstergesini gizle
+function hideLoading() {
+  const loadingElement = document.getElementById('loading');
+  if (loadingElement) {
+    loadingElement.style.display = 'none';
+  }
+}
+
+// Hata mesajını göster
+function showError(message) {
+  console.error('HATA:', message);
+  
+  const errorElement = document.getElementById('error-message');
+  if (errorElement) {
+    // Hata mesajına ikon ekle
+    errorElement.innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:center;">
+        <div style="margin-right:10px; color:red;">
+          <i class="material-icons">error</i>
+        </div>
+        <div>${message}</div>
+      </div>
+    `;
+    
+    // Hata mesajını göster ve animasyon ekle
+    errorElement.style.display = 'block';
+    errorElement.style.animation = 'fadeIn 0.3s';
+    
+    // 5 saniye sonra gizle
+    setTimeout(() => {
+      errorElement.style.animation = 'fadeOut 0.3s';
+    setTimeout(() => {
+      errorElement.style.display = 'none';
+      }, 300);
+    }, 5000);
+  }
+}
+
+// Kanal izlenme sayısına göre kazanç hesapla
+function hesaplaKazanc(izlenmeSayisi, estimatedEarnings = null) {
+  // Sunucudan gelen tahminleri kullan, yoksa hesapla
+  let minEarnings = 0;
+  let maxEarnings = 0;
+
+  if (estimatedEarnings) {
+    minEarnings = estimatedEarnings.min || 0;
+    maxEarnings = estimatedEarnings.max || 0;
+  } else {
+    const viewCountNumber = parseInt(izlenmeSayisi);
+    const minRate = 0.001;
+    const maxRate = 0.003;
+    const monthlyViews = viewCountNumber / 30; // Son 30 gün için ortalama görüntüleme
+    
+    minEarnings = Math.round(monthlyViews * minRate);
+    maxEarnings = Math.round(monthlyViews * maxRate);
+  }
+  
+  // Günlük ortalama izlenme
+  const dailyViews = Math.round(parseInt(izlenmeSayisi) / 30);
+  
+  return {
+    daily: {
+      minimum: Math.round(dailyViews * 0.001 * 0.7),
+      estimated: Math.round(dailyViews * 0.001),
+      maximum: Math.round(dailyViews * 0.001 * 1.3)
+    },
+    weekly: {
+      minimum: Math.round(dailyViews * 7 * 0.001 * 0.7 * 1.1),
+      estimated: Math.round(dailyViews * 7 * 0.001 * 1.1),
+      maximum: Math.round(dailyViews * 7 * 0.001 * 1.3 * 1.1)
+    },
+    monthly: {
+      minimum: minEarnings,
+      estimated: Math.round((minEarnings + maxEarnings) / 2),
+      maximum: maxEarnings
+    },
+    yearly: {
+      minimum: minEarnings * 12,
+      estimated: Math.round((minEarnings + maxEarnings) / 2) * 12,
+      maximum: maxEarnings * 12
+    }
+  };
+}
+
+// Kazanç verilerinden HTML oluştur
+function olusturKazancHTML(kazancVerileri) {
+  // İçeriği oluştur
+  let kazancHTML = `
+    <div class="earnings-details">
+      <div class="earnings-title">Tahmini Aylık Kazanç</div>
+      <div class="earnings-value">${formatMoney(kazancVerileri.min)} - ${formatMoney(kazancVerileri.max)}</div>
+  `;
+  
+  // Gelişmiş kazanç verileri kontrolü
+  if (kazancVerileri.multipliers && kazancVerileri.categoryInfo) {
+    console.log("💰 KAZANÇ HTML OLUŞTURULUYOR. KATEGORİ:", kazancVerileri.categoryInfo.type);
+    
+    // Kategori bilgisi olduğunda içerik kategorisini göster
+    const categoryType = kazancVerileri.categoryInfo.type;
+    const confidence = kazancVerileri.categoryInfo.confidence;
+    const categoryMultiplier = kazancVerileri.multipliers.category;
+    
+    // Kategori adını Türkçe'ye çevir
+    let categoryNameTR = categoryType;
+    switch(categoryType) {
+      case "News": categoryNameTR = "Haber"; break;
+      case "Education": categoryNameTR = "Eğitim"; break;
+      case "Finance": categoryNameTR = "Finans"; break;
+      case "Gaming": categoryNameTR = "Oyun"; break;
+      case "Tech": categoryNameTR = "Teknoloji"; break;
+      case "Entertainment": categoryNameTR = "Eğlence"; break;
+      case "Vlog": categoryNameTR = "Vlog"; break;
+      case "Sports": categoryNameTR = "Spor"; break;
+      case "Beauty": categoryNameTR = "Güzellik"; break;
+      case "Cooking": categoryNameTR = "Yemek"; break;
+      case "Uncategorized": categoryNameTR = "Kategorisiz"; break;
+    }
+    
+    // Kategori bölümünü ekle
+    kazancHTML += `
+      <div class="earnings-category-section">
+        <div class="category-info">
+          <div class="category-title">İçerik Kategorisi:</div>
+          <div class="category-value">${categoryNameTR} <span class="confidence">(${confidence}% emin)</span></div>
+        </div>
+        <div class="category-multiplier">
+          <div class="multiplier-title">Kategori CPM Çarpanı:</div>
+          <div class="multiplier-value">${categoryMultiplier.toFixed(1)}x</div>
+        </div>
+      </div>
+    `;
+    
+    console.log("✅ KATEGORİ BİLGİLERİ EKLEME TAMAMLANDI:", categoryNameTR);
+  } else {
+    console.log("⚠️ KATEGORİ BİLGİLERİ EKLENEMEDİ: Veri bulunamadı");
+  }
+
+  return `
+    <div class="earnings-grid">
+      <div class="earnings-card">
+        <h4>Günlük Kazanç</h4>
+        <div class="value min">${formatMoney(kazancVerileri.daily.minimum)} $</div>
+        <div class="value avg">${formatMoney(kazancVerileri.daily.estimated)} $</div>
+        <div class="value max">${formatMoney(kazancVerileri.daily.maximum)} $</div>
+      </div>
+      <div class="earnings-card">
+        <h4>Haftalık Kazanç</h4>
+        <div class="value min">${formatMoney(kazancVerileri.weekly.minimum)} $</div>
+        <div class="value avg">${formatMoney(kazancVerileri.weekly.estimated)} $</div>
+        <div class="value max">${formatMoney(kazancVerileri.weekly.maximum)} $</div>
+      </div>
+      <div class="earnings-card">
+        <h4>Aylık Kazanç</h4>
+        <div class="value min">${formatMoney(kazancVerileri.monthly.minimum)} $</div>
+        <div class="value avg">${formatMoney(kazancVerileri.monthly.estimated)} $</div>
+        <div class="value max">${formatMoney(kazancVerileri.monthly.maximum)} $</div>
+      </div>
+      <div class="earnings-card">
+        <h4>Yıllık Kazanç</h4>
+        <div class="value min">${formatMoney(kazancVerileri.yearly.minimum)} $</div>
+        <div class="value avg">${formatMoney(kazancVerileri.yearly.estimated)} $</div>
+        <div class="value max">${formatMoney(kazancVerileri.yearly.maximum)} $</div>
+      </div>
+    </div>
+    
+    ${kazancHTML}
+    
+    <p style="font-size:12px; opacity:0.8; margin-top:15px; text-align:center;">
+      Not: Bu kazanç tahminleri, kanal verileri ve içerik türü gibi faktörlere dayalı olarak yapılan istatistiksel hesaplamalardır. 
+      Gerçek kazançlar farklılık gösterebilir.
+    </p>
+  `;
+}
+
+// Çarpan açıklaması döndüren yardımcı fonksiyon
+function getMultiplierDescription(multiplier) {
+  if (multiplier >= 2.0) return "Çok yüksek değerli kategori";
+  if (multiplier >= 1.5) return "Yüksek değerli kategori";
+  if (multiplier >= 1.2) return "Orta-yüksek değerli kategori";
+  if (multiplier >= 1.0) return "Ortalama değerli kategori";
+  if (multiplier >= 0.8) return "Orta-düşük değerli kategori";
+  return "Düşük değerli kategori";
+}
+
+// Kanal adından tutarlı renkler oluştur
+function generateChannelColors(channelName) {
+  // Kanal adından basit bir hash oluştur
+  let hash = 0;
+  for (let i = 0; i < channelName.length; i++) {
+    hash = channelName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  // Birincil renk
+  const h1 = Math.abs(hash % 360);  // Hue (0-360)
+  const s1 = 70 + Math.abs((hash >> 3) % 30);  // Saturation (70-100)
+  const l1 = 45 + Math.abs((hash >> 6) % 10);  // Lightness (45-55)
+  
+  // İkincil renk (komplementer)
+  const h2 = (h1 + 40) % 360;  // 40 derece farklı hue
+  const s2 = s1 - 10;  // Biraz daha az doygun
+  const l2 = l1 + 5;   // Biraz daha açık
+  
+  return {
+    primary: `hsl(${h1}, ${s1}%, ${l1}%)`,
+    secondary: `hsl(${h2}, ${s2}%, ${l2}%)`
+  };
+}
+
+// YouTube API v3 üzerinden banner URL'sini almayı dene
+function fetchYouTubeBanner(channelId, existingBannerUrl = null) {
+  console.log(`Banner alınıyor (Kanal ID: ${channelId})...`);
+  
+  return new Promise((resolve, reject) => {
+    // 1. Eğer doğrudan banner URL'si verilmişse, onu kullan
+    if (existingBannerUrl) {
+      console.log('Kanal verisinden banner URL kullanılıyor:', existingBannerUrl);
+      
+      // Banner formatını optimize et (eğer gerekiyorsa)
+      let formattedBannerUrl = existingBannerUrl;
+      if (!formattedBannerUrl.includes('w1280')) {
+        formattedBannerUrl += "=w1280-fcrop64=1,00000000ffffffff-k-c0xffffffff-no-nd-rj";
+        console.log('Banner URL formatlandı:', formattedBannerUrl);
+      }
+      
+      // Önce CORS olmadan doğrudan URL'yi deneyeceğiz
+      tryDirectBannerLoading(formattedBannerUrl)
+        .then(usableUrl => {
+          // Direkt URL çalıştıysa bunu önbelleğe al ve kullan
+          bannerCache.set(channelId, usableUrl);
+          resolve(usableUrl);
+        })
+        .catch(() => {
+          // CORS hatası varsa proxy üzerinden dene
+          const proxyUrl = `/api/proxy-banner?url=${encodeURIComponent(formattedBannerUrl)}`;
+          console.log('Direkt URL çalışmadı, proxy URL kullanılıyor:', proxyUrl);
+          bannerCache.set(channelId, proxyUrl);
+          resolve(proxyUrl);
+        });
+      
+      return; // Erken dönüş - backend çağrısı yapmaya gerek yok
+    }
+    
+    // 2. Önbellekte bu kanal ID için "banner yok" durumu varsa
+    const cachedUrl = bannerCache.get(channelId);
+    if (cachedUrl === false) {
+      console.log('Kanal için banner olmadığı önbellekte kayıtlı, istek yapılmayacak');
+      return resolve(null);
+    }
+    
+    // 3. Önbellekte varsa direkt kullan
+    if (cachedUrl) {
+      console.log('Banner URL önbellekten bulundu:', cachedUrl);
+      return resolve(cachedUrl);
+    }
+    
+    // 4. Hiçbir önbellek veya doğrudan URL yoksa, API'ye sor
+    console.log('Önbellekte banner yok, API isteği yapılıyor...');
+    const timestamp = new Date().getTime();
+    const bannerApiUrl = `/api/channel-banner/${channelId}?_t=${timestamp}`;
+    
+    // Retry değerleri
+    let retryCount = 0;
+    const maxRetries = 2;
+    const retryDelay = 500;
+    
+    // Yeniden deneme yapabilen fetch fonksiyonu
+    const fetchWithRetry = () => {
+      fetch(bannerApiUrl, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
+        cache: 'no-store'
+      })
+        .then(response => {
+          console.log(`Banner API yanıt status: ${response.status}`);
+          
+          if (!response.ok) {
+            if (response.status === 403 && retryCount < maxRetries) {
+              retryCount++;
+              console.log(`Banner API 403 hatası, ${retryDelay}ms sonra tekrar deneniyor... (Deneme: ${retryCount}/${maxRetries})`);
+              setTimeout(fetchWithRetry, retryDelay);
+              return null;
+            }
+            
+            throw new Error(`Banner alınamadı (HTTP Kod: ${response.status})`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data === null) return;
+          
+          console.log('Banner API yanıtı:', data);
+          
+          if (data.bannerUrl) {
+            console.log('Banner URL bulundu:', data.bannerUrl);
+            
+            if (!data.bannerUrl.startsWith('http')) {
+              console.error('Banner URL hatalı format:', data.bannerUrl);
+              reject(new Error('Banner URL\'si geçersiz formatta'));
+              return;
+            }
+            
+            // Format parametreleri ekle
+            let formattedBannerUrl = data.bannerUrl;
+            if (!formattedBannerUrl.includes('w1280')) {
+              formattedBannerUrl += "=w1280-fcrop64=1,00000000ffffffff-k-c0xffffffff-no-nd-rj";
+            }
+            
+            // Önce CORS olmadan doğrudan URL'yi deneyeceğiz
+            tryDirectBannerLoading(formattedBannerUrl)
+              .then(usableUrl => {
+                // Direkt URL çalıştıysa bunu önbelleğe al ve kullan
+                bannerCache.set(channelId, usableUrl);
+                resolve(usableUrl);
+              })
+              .catch(() => {
+                // CORS hatası varsa proxy üzerinden dene
+                const proxyUrl = `/api/proxy-banner?url=${encodeURIComponent(formattedBannerUrl)}`;
+                console.log('Direkt URL çalışmadı, proxy URL kullanılıyor:', proxyUrl);
+                bannerCache.set(channelId, proxyUrl);
+                resolve(proxyUrl);
+              });
+            
+            return;
+          }
+          
+          // Banner URL'si bulunamadı - "banner yok" durumunu önbelleğe al
+          console.log('API üzerinden banner URL\'si bulunamadı');
+          bannerCache.set(channelId, false); // false değerini sakla
+          reject(new Error('Banner URL\'si bulunamadı'));
+        })
+        .catch(error => {
+          console.error('Banner alma hatası:', error);
+          reject(error);
+        });
+    };
+    
+    // İlk isteği başlat
+    fetchWithRetry();
+  });
+}
+
+// CORS problemi olmadan direkt banner URL yüklemeyi dene
+function tryDirectBannerLoading(bannerUrl) {
+  return new Promise((resolve, reject) => {
+    // Timeout - tarayıcı çok uzun süre beklemesin
+    const timeoutId = setTimeout(() => {
+      console.log('Banner direkt yükleme zaman aşımı');
+      reject(new Error('Timeout'));
+    }, 3000);
+    
+    const testImg = new Image();
+    
+    testImg.onload = function() {
+      clearTimeout(timeoutId);
+      console.log('Banner URL doğrudan yüklenebiliyor, proxy gerekmez');
+      resolve(bannerUrl); // Direkt URL'yi döndür
+    };
+    
+    testImg.onerror = function(err) {
+      clearTimeout(timeoutId);
+      console.warn('Banner URL doğrudan yüklenemiyor, CORS sorunu olabilir');
+      reject(err);
+    };
+    
+    // Tarayıcının önbelleği kullanmaması için random param ekle
+    testImg.src = bannerUrl + (bannerUrl.includes('?') ? '&' : '?') + 'nocache=' + Math.random();
+  });
+}
+
+// Nesne içinde 'banner' içeren URL özelliklerini bul
+function findPossibleBannerUrls(obj, results = [], path = '') {
+  // Nesne kontrolü
+  if (!obj || typeof obj !== 'object') return results;
+  
+  // Nesnenin tüm özelliklerini dolaş
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const value = obj[key];
+      const newPath = path ? `${path}.${key}` : key;
+      
+      // URL olabilecek string değerleri kontrol et
+      if (typeof value === 'string' && 
+          (key.toLowerCase().includes('banner') || key.toLowerCase().includes('image')) && 
+          value.startsWith('http')) {
+        console.log(`Olası banner URL'si bulundu: ${newPath} = ${value}`);
+        results.push(value);
+      }
+      
+      // Alt nesneleri rekürsif olarak kontrol et
+      if (value !== null && typeof value === 'object') {
+        findPossibleBannerUrls(value, results, newPath);
+      }
+    }
+  }
+  
+  return results;
+}
+
+// Nesne içinde belirli kelimeleri içeren tüm alanları bul (debug için)
+function findAllFieldsContaining(obj, keywords, results = [], path = '') {
+  if (!obj || typeof obj !== 'object') return results;
+  
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const value = obj[key];
+      const newPath = path ? `${path}.${key}` : key;
+      
+      // Eğer anahtar kelimelerden birini içeriyorsa, alanı kaydet
+      if (keywords.some(keyword => key.toLowerCase().includes(keyword.toLowerCase()))) {
+        results.push({
+          path: newPath,
+          value: typeof value === 'object' ? 'Object' : value
+        });
+      }
+      
+      // Alt nesneleri rekürsif olarak kontrol et
+      if (value !== null && typeof value === 'object') {
+        findAllFieldsContaining(value, keywords, results, newPath);
+      }
+    }
+  }
+  
+  return results;
+}
+
+// YENİ: Otomatik banner oluşturma fonksiyonu
+function createAutomaticBanner(channel, bannerElement, callback) {
+  try {
+    // Kanal adını al
+    const channelName = channel.channelTitle || channel.snippet?.title || 'YouTube Kanalı';
+    
+    // Kanal için tutarlı renkler oluştur
+    const colors = generateChannelColors(channelName);
+    
+    // Canvas oluştur - Daha optimize bir çözünürlük kullanıyoruz
+    const canvas = document.createElement('canvas');
+    canvas.width = 1280; // HD çözünürlük - daha optimize
+    canvas.height = 720; // HD çözünürlük - 16:9 oranını koruyoruz
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Anti-aliasing'i etkinleştir (daha yumuşak kenarlar)
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    
+    // Önemli içeriği merkeze toplamak için merkez alanını tanımla
+    // Banner 250px yükseklikte gösterileceği için, asıl içeriği merkeze topla
+    const contentPadding = Math.floor((720 - 250) / 2);
+    const safeContentArea = {
+      y: contentPadding,      // Üstten kesilecek alan
+      height: 720 - contentPadding * 2  // Görünür alan (250px)
+    };
+    
+    // Daha şık arka plan oluştur - çift yönlü ve daha yumuşak gradient
+    const gradient = ctx.createRadialGradient(
+      canvas.width/2, canvas.height/2, 0,
+      canvas.width/2, canvas.height/2, canvas.width*0.7
+    );
+    gradient.addColorStop(0, colors.secondary);
+    gradient.addColorStop(0.7, colors.primary);
+    gradient.addColorStop(1, 'rgba(0,0,0,0.4)'); // Kenarlar daha koyu
+    
+    // Arkaplanı doldur
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Merkezi içerik alanını belirle - görünür/kesilmeyen kısım
+    const centerY = canvas.height / 2; // Canvas merkezi
+    
+    // Şık desenler ekle - sadece görünür alanda yoğunlaştır
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 3; // Daha ince çizgiler
+    
+    // Görünür alanda yatay çizgiler
+    for (let i = 0; i < 6; i++) {
+      // Yatay çizgiler - sadece merkez alana
+      const y = safeContentArea.y + (safeContentArea.height * (i/6));
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+    
+    // Dikey çizgiler - tüm canvas'da
+    for (let i = 0; i < 8; i++) {
+      const x = canvas.width * (i/8);
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    
+    // Noktalar ekle - görünür alanda yoğunlaştır
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+    for (let i = 0; i < 80; i++) {
+      const size = Math.random() * 8 + 2;
+      // X pozisyonu tüm genişlikte
+      const x = Math.random() * canvas.width;
+      // Y pozisyonu görünür alanda yoğunlaştır
+      const y = safeContentArea.y + Math.random() * safeContentArea.height;
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    // Merkez alan vurgusu ekle - sadece görünür kısımda
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.fillRect(0, safeContentArea.y, canvas.width, safeContentArea.height);
+    
+    // Kanal adını merkeze yaz
+    ctx.font = 'bold 68px Arial, sans-serif';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Kanal adına gölge ekleyerek okunabilirliği artır
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+    ctx.shadowBlur = 15;
+    ctx.shadowOffsetX = 3;
+    ctx.shadowOffsetY = 3;
+    
+    // Uzun kanal adları için metni sınırla
+    let displayName = channelName;
+    if (channelName.length > 25) {
+      displayName = channelName.substring(0, 22) + '...';
+    }
+    
+    // Kanal adını tam merkeze yaz
+    ctx.fillText(displayName, canvas.width / 2, centerY - 10);
+    
+    // Alt yazı - tam merkez altına
+    ctx.font = '30px Arial, sans-serif';
+    ctx.shadowBlur = 10;
+    ctx.fillText('Youtube Kanalı', canvas.width / 2, centerY + 60);
+    
+    // Canvas içeriğini data URL olarak al ve banner elemanına ata
+    // Otomatik oluşturulan banner için daha yüksek kalite kullanıyoruz (ilk aratmada kalite daha önemli)
+    const bannerQuality = 0.85; // 0.5'den 0.85'e yükseltildi
+    bannerElement.src = canvas.toDataURL('image/jpeg', bannerQuality);
+    
+    // CSS sınıflarını ayarla
+    bannerElement.classList.remove('error');
+    bannerElement.classList.add('auto-banner');
+    
+    // Banner yüklendiğinde callback'i çağır
+    bannerElement.onload = function() {
+      console.log('Otomatik banner başarıyla yüklendi - merkez içerik odaklı');
+      
+      // Banner'ın üst ve alttan kesilmesini, ancak önemli içeriğin tam merkez gösterilmesini sağla
+      bannerElement.style.objectPosition = 'center center';
+      bannerElement.style.height = '250px'; // 250px yükseklik
+      
+      // Yüksek kalite ayarları
+      bannerElement.style.imageRendering = '-webkit-optimize-contrast';
+      bannerElement.style.objectFit = 'cover';
+      
+      // Otomatik oluşturulan banner için optimizasyon yapma (zaten optimize)
+      bannerElement.dataset.optimized = 'true';
+      
+      callback();
+    };
+    
+    bannerElement.onerror = function() {
+      console.error('Otomatik banner yüklenirken hata oluştu');
+      bannerElement.classList.add('error');
+      callback();
+    };
+    
+    console.log('Merkez odaklı otomatik banner oluşturuldu - üst ve alttan kesilecek şekilde');
+  } catch (error) {
+    console.error('Otomatik banner oluşturma hatası:', error);
+    bannerElement.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFeQI6UgG55AAAAABJRU5ErkJggg==';
+    bannerElement.classList.add('error');
+    callback();
+  }
+} 
