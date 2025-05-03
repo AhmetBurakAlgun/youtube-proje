@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const dotenv = require('dotenv');
+const axios = require('axios');
 
 // Routes
 const channelRoutes = require('./routes/channelRoutes');
@@ -121,6 +122,62 @@ app.get('/api/youtube-api-key', (req, res) => {
   
   // API anahtarını JSON olarak döndür
   res.json({ apiKey });
+});
+
+// Proxy middleware'leri
+
+// Banner proxy middleware
+app.get('/api/proxy-banner', async (req, res) => {
+  try {
+    const imageUrl = req.query.url;
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'URL parametresi gerekli' });
+    }
+
+    const response = await axios({
+      method: 'get',
+      url: imageUrl,
+      responseType: 'arraybuffer'
+    });
+
+    res.set({
+      'Content-Type': response.headers['content-type'],
+      'Cache-Control': 'public, max-age=86400',
+      'Access-Control-Allow-Origin': '*'
+    });
+
+    res.send(response.data);
+  } catch (error) {
+    console.error('Banner proxy hatası:', error.message);
+    res.status(500).json({ error: 'Banner yüklenirken hata oluştu' });
+  }
+});
+
+// Image proxy middleware
+app.get('/api/proxy-image', async (req, res) => {
+  try {
+    const imageUrl = req.query.url;
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'URL parametresi gerekli' });
+    }
+
+    const response = await axios({
+      method: 'get',
+      url: imageUrl,
+      responseType: 'arraybuffer'
+    });
+
+    res.set({
+      'Content-Type': response.headers['content-type'],
+      'Cache-Control': 'public, max-age=86400',
+      'Access-Control-Allow-Origin': '*'
+    });
+
+    res.send(response.data);
+  } catch (error) {
+    console.error('Image proxy hatası:', error.message);
+    res.status(500).json({ error: 'Görsel yüklenirken hata oluştu' });
+  }
 });
 
 mongoose.connect(process.env.MONGODB_URI)

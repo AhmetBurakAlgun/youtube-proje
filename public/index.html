@@ -198,12 +198,13 @@
             <div class="svg-wrapper" id="div1">
               <img src="images/icon.png" alt="youtube-icon">
             </div>
-            <input class="searchTerm" id="search" type="search" placeholder="Youtube Kanal Adı, ID veya Kullanıcı Adı giriniz" required>
+            <input class="searchTerm" id="search" type="search" autocomplete="off" placeholder="Youtube Kanal Adı, ID veya Kullanıcı Adı giriniz" required>
           </div>
           <div class="input-field second-wrap">
             <button id="submit" class="btn-search" type="submit"><i class="material-icons right">play_arrow</i></button> 
           </div>
         </div>
+        <div class="search-dropdown" id="search-dropdown"></div>
       </form>
 
       <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
@@ -346,7 +347,7 @@
       }
     }
   </script>
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
   <script>
     // API Kotaları Modal
     document.addEventListener('DOMContentLoaded', function() {

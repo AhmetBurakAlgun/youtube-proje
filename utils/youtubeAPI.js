@@ -1,6 +1,7 @@
 const axios = require('axios');
 const dotenv = require('dotenv');
 const { categoryExtractor, categoryCpmMultipliers } = require('./contentAnalyzer');
+const { formatters } = require('./formatters.js');
 
 dotenv.config();
 
@@ -131,6 +132,18 @@ const getChannelInfo = async (channelId) => {
     
     // Uploads playlist ID'sini kaydet - getChannelVideos için kullanılabilir
     const uploadsPlaylistId = channelInfo.contentDetails?.relatedPlaylists?.uploads || null;
+
+    // Kanal kategorisini belirle
+    const categoryInfo = categoryExtractor({
+      channelDescription: channelInfo.snippet.description || '',
+      tags: channelInfo.snippet.tags || []
+    });
+    
+    console.log('📊 Kategori analizi:', {
+      channelDescription: channelInfo.snippet.description?.substring(0, 50) + '...',
+      tags: channelInfo.snippet.tags,
+      result: categoryInfo
+    });
     
     return {
       channelId: channelInfo.id,
@@ -142,9 +155,10 @@ const getChannelInfo = async (channelId) => {
       thumbnailUrl: channelInfo.snippet.thumbnails.high?.url || channelInfo.snippet.thumbnails.medium?.url || channelInfo.snippet.thumbnails.default?.url || 'https://via.placeholder.com/800',
       country: channelInfo.snippet.country || 'TR',
       publishedAt: channelInfo.snippet.publishedAt,
-      bannerUrl: bannerUrl, // Yeni eklenen banner URL
-      customUrl: customUrl, // Yeni eklenen özel URL
-      uploadsPlaylistId: uploadsPlaylistId // Video listesini çekmek için playlist ID
+      bannerUrl: bannerUrl,
+      customUrl: customUrl,
+      uploadsPlaylistId: uploadsPlaylistId,
+      categoryInfo: categoryInfo
     };
   } catch (error) {
     console.error('Kanal bilgisi çekilirken hata oluştu:', error.message);
@@ -380,39 +394,6 @@ const findChannelId = async (channelNameOrUrl) => {
   }
 };
 
-// Kazanç hesaplama
-const calculateEarnings = (viewCount) => {
-  if (!viewCount) return { min: 0, max: 0 };
-  
-  const monthlyViews = parseInt(viewCount, 10) / 30; // Aylık ortalama görüntüleme
-  const minRate = 0.001; // 1000 görüntüleme başına 1$
-  const maxRate = 0.004; // 1000 görüntüleme başına 4$
-  
-  return {
-    min: Math.round(monthlyViews * minRate),
-    max: Math.round(monthlyViews * maxRate)
-  };
-};
-
-/**
- * Kanalın yaşını ay olarak hesaplar
- * @param {string} publishedAt - Kanalın oluşturulma tarihi (ISO 8601 formatında)
- * @returns {number} Kanalın yaşı (ay olarak)
- */
-function calculateChannelAgeMonths(publishedAt) {
-  if (!publishedAt) return 12; // Varsayılan olarak 1 yıl
-
-  const publishDate = new Date(publishedAt);
-  const currentDate = new Date();
-  
-  // Ay farkını hesapla
-  const monthDiff = (currentDate.getFullYear() - publishDate.getFullYear()) * 12 +
-                    (currentDate.getMonth() - publishDate.getMonth());
-  
-  // Minimum 1 ay (yeni kanallar için)
-  return Math.max(1, monthDiff);
-}
-
 /**
  * Kanalın video yükleme sıklığına göre aktivite çarpanı hesaplar
  * @param {number} videoCount - Kanal video sayısı
@@ -487,97 +468,13 @@ function calculateGeographicMultiplier(country) {
   return geoMultipliers[country] || 1.0;
 }
 
-/**
- * Gelişmiş kazanç tahmini - Kanal verilerini analiz ederek daha doğru bir tahmin yapar
- * Kategori analizi, abone sayısı, ülke gibi faktörleri hesaba katar
- * 
- * @param {Object} channelInfo - YouTube API'den alınan kanal bilgileri
- * @param {Array} videos - Son videoların listesi (isteğe bağlı)
- * @returns {Object} Tahmin edilen min/max kazanç değerleri ve açıklayıcı çarpanlar
- */
-function advancedCalculateEarnings(channelInfo, videos = []) {
-  try {
-    console.log(`Gelişmiş kazanç hesabı yapılıyor: ${channelInfo.channelTitle || 'Bilinmeyen Kanal'}`);
-    
-    // Temel kazanç hesabı
-    const viewCount = parseInt(channelInfo.viewCount || 0);
-    const subscriberCount = parseInt(channelInfo.subscriberCount || 0);
-    
-    // Aylık ortalama görüntülemeyi hesapla (toplam izlenme / kanal yaşı [ay])
-    const channelAgeMonths = calculateChannelAgeMonths(channelInfo.publishedAt);
-    const monthlyViews = Math.round(viewCount / Math.max(channelAgeMonths, 1));
-    console.log(`Aylık ortalama görüntüleme: ${monthlyViews.toLocaleString()} (${channelAgeMonths} aylık kanal)`);
-    
-    // Video sayısına göre aktivite çarpanı hesapla
-    const videoCount = parseInt(channelInfo.videoCount || 0);
-    const activityMultiplier = calculateActivityMultiplier(videoCount, channelAgeMonths);
-    console.log(`Aktivite çarpanı: ${activityMultiplier.toFixed(2)}x (${videoCount} video)`);
-    
-    // Abone sayısına göre kanal büyüklük çarpanı hesapla
-    const channelSizeMultiplier = calculateChannelSizeMultiplier(subscriberCount);
-    console.log(`Kanal büyüklük çarpanı: ${channelSizeMultiplier.toFixed(2)}x (${subscriberCount.toLocaleString()} abone)`);
-    
-    // Ülke bazlı CPM çarpanı
-    const geoMultiplier = calculateGeographicMultiplier(channelInfo.country);
-    console.log(`Ülke çarpanı: ${geoMultiplier.toFixed(2)}x (${channelInfo.country || 'Bilinmeyen'})`);
-    
-    // YENİ: Kategori analizi ve içerik türü çarpanı hesapla
-    const categoryAnalysis = categoryExtractor(channelInfo, videos);
-    const categoryMultiplier = categoryAnalysis.cpmMultiplier;
-    console.log(`Kategori çarpanı: ${categoryMultiplier.toFixed(2)}x (${categoryAnalysis.categoryType})`);
-    
-    // CPM Hesabı (bin izlenme başına maliyet)
-    // Temel CPM değerleri
-    const baseCpmMin = 0.25;  // Minimum CPM (USD)
-    const baseCpmMax = 4.00;  // Maximum CPM (USD)
-    
-    // Tüm çarpanları uygula
-    const adjustedCpmMin = baseCpmMin * geoMultiplier * categoryMultiplier * channelSizeMultiplier * activityMultiplier;
-    const adjustedCpmMax = baseCpmMax * geoMultiplier * categoryMultiplier * channelSizeMultiplier * activityMultiplier;
-    
-    // Aylık kazanç hesabı (CPM * Aylık görüntüleme / 1000)
-    const monthlyMinEarnings = Math.round((adjustedCpmMin * monthlyViews) / 1000);
-    const monthlyMaxEarnings = Math.round((adjustedCpmMax * monthlyViews) / 1000);
-    
-    // Sonuç nesnesi
-    const result = {
-      min: monthlyMinEarnings,
-      max: monthlyMaxEarnings,
-      multipliers: {
-        geographic: geoMultiplier,
-        channelSize: channelSizeMultiplier,
-        activity: activityMultiplier,
-        category: categoryMultiplier
-      },
-      categoryInfo: {
-        type: categoryAnalysis.categoryType,
-        confidence: categoryAnalysis.confidence
-      },
-      metrics: {
-        monthlyViews: monthlyViews,
-        totalViews: viewCount,
-        subscriberCount: subscriberCount,
-        videoCount: videoCount,
-        channelAgeMonths: channelAgeMonths
-      }
-    };
-    
-    console.log(`Gelişmiş kazanç tahmini: $${monthlyMinEarnings} - $${monthlyMaxEarnings}/ay`);
-    return result;
-    
-  } catch (error) {
-    console.error(`Gelişmiş kazanç hesaplama hatası: ${error.message}`);
-    // Hata durumunda basit bir kazanç hesabı dön
-    return calculateEarnings(channelInfo.viewCount || 0);
-  }
-}
-
 module.exports = {
   getChannelInfo,
   getChannelVideos,
   findChannelId,
   rotateApiKey,
   getCurrentApiKey,
-  calculateEarnings,
-  advancedCalculateEarnings
+  calculateActivityMultiplier,
+  calculateChannelSizeMultiplier,
+  calculateGeographicMultiplier
 }; 

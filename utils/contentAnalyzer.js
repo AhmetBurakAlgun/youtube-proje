@@ -405,76 +405,26 @@ const categoryKeywords = {
   Entertainment: [
     // Türkçe - Ağırlıklı anahtar kelimeler
     { word: 'eğlence', weight: 2.0 },
-    { word: 'komik', weight: 1.8 },
+    { word: 'komedi', weight: 1.8 },
     { word: 'mizah', weight: 1.8 },
     { word: 'şaka', weight: 1.6 },
-    { word: 'komedi', weight: 1.8 },
-    { word: 'stand up', weight: 1.7 },
-    { word: 'film', weight: 1.5 },
-    { word: 'dizi', weight: 1.5 },
-    { word: 'react', weight: 1.6 },
-    { word: 'reaksiyon', weight: 1.6 },
-    { word: 'challenge', weight: 1.5 },
-    { word: 'trend', weight: 1.0 },
-    { word: 'viral', weight: 1.2 },
-    { word: 'meme', weight: 1.4 },
-    { word: 'eğlenceli', weight: 1.8 },
     { word: 'gülmek', weight: 1.6 },
-    { word: 'şakalar', weight: 1.6 },
-    { word: 'pranks', weight: 1.5 },
-    { word: 'sketch', weight: 1.6 },
-    { word: 'skeç', weight: 1.6 },
-    { word: 'çekiliş', weight: 1.3 },
-    { word: 'hediye', weight: 1.2 },
-    { word: 'komedi', weight: 1.8 },
-    { word: 'dizi tavsiyeleri', weight: 1.4 },
-    { word: 'film önerileri', weight: 1.4 },
-    { word: 'film inceleme', weight: 1.4 },
-    { word: 'dizi inceleme', weight: 1.4 },
-    { word: 'eğlence', weight: 2.0 },
-    { word: 'eğlendirici', weight: 1.7 },
+    { word: 'eğlenceli', weight: 1.7 },
+    { word: 'komik', weight: 1.7 },
+    { word: 'show', weight: 1.5 },
+    { word: 'şov', weight: 1.5 },
+    { word: 'talk show', weight: 1.6 },
     { word: 'magazin', weight: 1.5 },
-    { word: 'ünlüler', weight: 1.4 },
-    { word: 'yarışma', weight: 1.5 },
-    { word: 'show', weight: 1.6 },
-    { word: 'podcast', weight: 1.4 },
-    { word: 'sohbet', weight: 1.2 },
-    { word: 'sesli kitap', weight: 1.2 },
-    { word: 'kitap yorumları', weight: 1.2 },
-    { word: 'kitap', weight: 1.0 },
-    { word: 'talk show', weight: 1.5 },
-    { word: 'arkadaşlar', weight: 1.0 },
-    { word: 'aile', weight: 0.9 },
-    // İngilizce - Ağırlıklı anahtar kelimeler
+    { word: 'yarışma', weight: 1.4 },
+    // İngilizce
     { word: 'entertainment', weight: 2.0 },
-    { word: 'funny', weight: 1.8 },
     { word: 'comedy', weight: 1.8 },
-    { word: 'prank', weight: 1.5 },
-    { word: 'movie', weight: 1.5 },
-    { word: 'series', weight: 1.5 },
-    { word: 'tv', weight: 1.4 },
-    { word: 'show', weight: 1.6 },
-    { word: 'react', weight: 1.6 },
-    { word: 'reaction', weight: 1.6 },
-    { word: 'challenge', weight: 1.5 },
-    { word: 'trending', weight: 1.0 },
-    { word: 'viral', weight: 1.2 },
-    { word: 'fun', weight: 1.7 },
-    { word: 'laughter', weight: 1.6 },
-    { word: 'jokes', weight: 1.6 },
-    { word: 'pranks', weight: 1.5 },
-    { word: 'sketch', weight: 1.6 },
-    { word: 'giveaway', weight: 1.3 },
-    { word: 'gift', weight: 1.2 },
-    { word: 'comedy', weight: 1.8 },
-    { word: 'show', weight: 1.6 },
-    { word: 'celebrities', weight: 1.4 },
-    { word: 'magazine', weight: 1.5 },
-    { word: 'competition', weight: 1.5 },
-    { word: 'podcast', weight: 1.4 },
-    { word: 'audiobook', weight: 1.2 },
-    { word: 'book reviews', weight: 1.2 },
-    { word: 'talk show', weight: 1.5 }
+    { word: 'funny', weight: 1.7 },
+    { word: 'humor', weight: 1.8 },
+    { word: 'show', weight: 1.5 },
+    { word: 'talk show', weight: 1.6 },
+    { word: 'celebrity', weight: 1.5 },
+    { word: 'gossip', weight: 1.4 }
   ],
   Vlog: [
     // Türkçe - Ağırlıklı anahtar kelimeler
@@ -551,78 +501,70 @@ const categoryKeywords = {
   Sports: [
     // Türkçe - Ağırlıklı anahtar kelimeler
     { word: 'spor', weight: 2.0 },
-    { word: 'futbol', weight: 1.9 },
-    { word: 'basketbol', weight: 1.8 },
+    { word: 'futbol', weight: 2.0 },
+    { word: 'basketbol', weight: 1.9 },
+    { word: 'voleybol', weight: 1.9 },
+    { word: 'takım', weight: 1.8 },
     { word: 'maç', weight: 1.8 },
-    { word: 'fitness', weight: 1.7 },
-    { word: 'antrenman', weight: 1.7 },
-    { word: 'egzersiz', weight: 1.7 },
-    { word: 'galatasaray', weight: 1.8 },
-    { word: 'fenerbahçe', weight: 1.8 },
-    { word: 'beşiktaş', weight: 1.8 },
-    { word: 'lig', weight: 1.7 },
-    { word: 'şampiyona', weight: 1.7 },
-    { word: 'kupa', weight: 1.6 },
-    { word: 'transfer', weight: 1.6 },
-    { word: 'takım', weight: 1.6 },
-    { word: 'oyuncu', weight: 1.5 },
+    { word: 'lig', weight: 1.8 },
+    { word: 'şampiyonluk', weight: 1.7 },
+    { word: 'kupa', weight: 1.7 },
+    { word: 'turnuva', weight: 1.7 },
+    { word: 'antrenman', weight: 1.6 },
+    { word: 'idman', weight: 1.6 },
+    { word: 'saha', weight: 1.5 },
+    { word: 'stadyum', weight: 1.5 },
+    { word: 'tribün', weight: 1.5 },
+    { word: 'taraftar', weight: 1.6 },
+    { word: 'federasyon', weight: 1.4 },
+    { word: 'kulüp', weight: 1.8 },
+    { word: 'sporcu', weight: 1.7 },
+    { word: 'atlet', weight: 1.6 },
+    { word: 'koç', weight: 1.6 },
+    { word: 'teknik direktör', weight: 1.7 },
+    { word: 'transfer', weight: 1.7 },
+    { word: 'kadro', weight: 1.6 },
     { word: 'süper lig', weight: 1.8 },
-    { word: 'premier lig', weight: 1.7 },
-    { word: 'la liga', weight: 1.7 },
-    { word: 'serie a', weight: 1.7 },
-    { word: 'bundesliga', weight: 1.7 },
-    { word: 'spor haberleri', weight: 1.8 },
-    { word: 'spor yorumları', weight: 1.7 },
-    { word: 'maç önü', weight: 1.6 },
-    { word: 'maç sonu', weight: 1.6 },
-    { word: 'futbol yorumları', weight: 1.7 },
-    { word: 'spor spikeri', weight: 1.6 },
-    { word: 'spor yorumcusu', weight: 1.6 },
-    { word: 'hakem', weight: 1.5 },
-    { word: 'canlı skor', weight: 1.6 },
-    { word: 'canlı maç', weight: 1.7 },
-    { word: 'maç özeti', weight: 1.7 },
-    { word: 'gol', weight: 1.6 },
-    { word: 'gol özeti', weight: 1.6 },
-    { word: 'en iyi goller', weight: 1.6 },
-    { word: 'futbolcu', weight: 1.7 },
-    { word: 'transfer haberleri', weight: 1.6 },
-    { word: 'f1', weight: 1.7 },
-    { word: 'formula', weight: 1.7 },
-    { word: 'koşu', weight: 1.5 },
-    { word: 'yüzme', weight: 1.5 },
-    { word: 'tenis', weight: 1.6 },
-    { word: 'voleybol', weight: 1.6 },
+    { word: 'premier lig', weight: 1.8 },
+    { word: 'la liga', weight: 1.8 },
+    { word: 'serie a', weight: 1.8 },
+    { word: 'bundesliga', weight: 1.8 },
+    { word: 'champions league', weight: 1.8 },
+    { word: 'europa league', weight: 1.8 },
+    { word: 'milli takım', weight: 1.8 },
+    { word: 'milli', weight: 1.6 },
+    { word: 'fenerbahçe', weight: 1.9 },
+    { word: 'galatasaray', weight: 1.9 },
+    { word: 'beşiktaş', weight: 1.9 },
+    { word: 'trabzonspor', weight: 1.9 },
+    { word: 'resmi', weight: 1.5 },
+    { word: 'resmi kanal', weight: 1.8 },
+    { word: 'spor kulübü', weight: 1.9 },
     // İngilizce - Ağırlıklı anahtar kelimeler
     { word: 'sports', weight: 2.0 },
-    { word: 'football', weight: 1.9 },
-    { word: 'soccer', weight: 1.9 },
-    { word: 'basketball', weight: 1.8 },
+    { word: 'football', weight: 2.0 },
+    { word: 'soccer', weight: 2.0 },
+    { word: 'basketball', weight: 1.9 },
+    { word: 'volleyball', weight: 1.9 },
+    { word: 'team', weight: 1.8 },
     { word: 'match', weight: 1.8 },
-    { word: 'fitness', weight: 1.7 },
-    { word: 'training', weight: 1.7 },
-    { word: 'exercise', weight: 1.7 },
-    { word: 'league', weight: 1.7 },
+    { word: 'league', weight: 1.8 },
     { word: 'championship', weight: 1.7 },
+    { word: 'cup', weight: 1.7 },
     { word: 'tournament', weight: 1.7 },
-    { word: 'workout', weight: 1.7 },
-    { word: 'gym', weight: 1.7 },
-    { word: 'transfer', weight: 1.6 },
-    { word: 'team', weight: 1.6 },
-    { word: 'player', weight: 1.5 },
-    { word: 'premier league', weight: 1.8 },
-    { word: 'la liga', weight: 1.7 },
-    { word: 'serie a', weight: 1.7 },
-    { word: 'bundesliga', weight: 1.7 },
-    { word: 'sports news', weight: 1.8 },
-    { word: 'sports commentary', weight: 1.7 },
-    { word: 'pre-match', weight: 1.6 },
-    { word: 'post-match', weight: 1.6 },
-    { word: 'referee', weight: 1.5 },
-    { word: 'live score', weight: 1.6 },
-    { word: 'match highlights', weight: 1.7 },
-    { word: 'goal', weight: 1.6 },
-    { word: 'goal highlights', weight: 1.6 }
+    { word: 'training', weight: 1.6 },
+    { word: 'stadium', weight: 1.5 },
+    { word: 'fan', weight: 1.6 },
+    { word: 'federation', weight: 1.4 },
+    { word: 'club', weight: 1.8 },
+    { word: 'athlete', weight: 1.7 },
+    { word: 'coach', weight: 1.6 },
+    { word: 'transfer', weight: 1.7 },
+    { word: 'squad', weight: 1.6 },
+    { word: 'national team', weight: 1.8 },
+    { word: 'official', weight: 1.5 },
+    { word: 'official channel', weight: 1.8 },
+    { word: 'sports club', weight: 1.9 }
   ],
   Beauty: [
     // Türkçe - Ağırlıklı anahtar kelimeler
@@ -779,32 +721,19 @@ const categoryCpmMultipliers = {
   Uncategorized: 1.0 // Belirlenemeyen içerik
 };
 
-// Tanınmış gazeteciler ve yorumcular (otomatik News kategorisine atanması için)
-const knownJournalists = [
-  { name: 'fatih altaylı', category: 'News', confidence: 90 },
-  { name: 'cüneyt özdemir', category: 'News', confidence: 90 },
-  { name: 'nevşin mengü', category: 'News', confidence: 90 },
-  { name: 'ece üner', category: 'News', confidence: 90 },
-  { name: 'fatih portakal', category: 'News', confidence: 90 },
-  { name: 'mirgün cabas', category: 'News', confidence: 90 },
-  { name: 'uğur dündar', category: 'News', confidence: 90 },
-  { name: 'ruşen çakır', category: 'News', confidence: 90 },
-  { name: 'oğuz haksever', category: 'News', confidence: 90 },
-  { name: 'deniz bayramoğlu', category: 'News', confidence: 90 },
-  { name: 'ahmet hakan', category: 'News', confidence: 90 },
-  { name: 'sedef kabaş', category: 'News', confidence: 90 },
-  { name: 'sözcü', category: 'News', confidence: 90 },
-  { name: 'cumhuriyet', category: 'News', confidence: 90 },
-  { name: 'habertürk', category: 'News', confidence: 90 },
-  { name: 'ntv', category: 'News', confidence: 90 },
-  { name: 'cnn türk', category: 'News', confidence: 90 },
-  { name: 'fox haber', category: 'News', confidence: 90 },
-  { name: 'halk tv', category: 'News', confidence: 90 },
-  { name: 'tele1', category: 'News', confidence: 90 },
-  { name: 'murat yetkin', category: 'News', confidence: 90 },
-  { name: 'levent gültekin', category: 'News', confidence: 90 },
-  { name: 'fikri sağlar', category: 'News', confidence: 90 }
-];
+// Kategori eşik değerleri
+const categoryThresholds = {
+    Sports: 0.2,    // Spor için daha düşük eşik
+    News: 0.25,     // Haber için orta eşik
+    Gaming: 0.3,    // Oyun için yüksek eşik
+    Finance: 0.3,   // Finans için yüksek eşik
+    Tech: 0.3,      // Teknoloji için yüksek eşik
+    Education: 0.25, // Eğitim için orta eşik
+    Beauty: 0.25,   // Güzellik için orta eşik
+    Cooking: 0.25,  // Yemek için orta eşik
+    Entertainment: 0.2, // Eğlence için düşük eşik
+    Vlog: 0.2       // Vlog için düşük eşik
+};
 
 /**
  * Metin normalizasyonu - özel karakterleri kaldırır ve küçük harfe çevirir
@@ -816,388 +745,109 @@ function normalizeText(text) {
   
   // Türkçe karakterleri koruyarak küçültme ve özel karakterleri temizleme
   return text.toLowerCase()
-    .replace(/[^\w\s\u00c0-\u00ff\u0100-\u017f\u0180-\u024fçğıöşü]/g, ' ')
+    .replace(/[^a-zğüşıöç\s]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
+// Keyword-based analiz için yardımcı fonksiyon
+function keywordBasedAnalysis(text) {
+    if (!text) return { type: 'Uncategorized', confidence: 0, scores: {} };
+    
+    const normalizedText = normalizeText(text);
+    const scores = {};
+    let maxScore = 0;
+    let maxCategory = 'Uncategorized';
+
+    // Her kategori için puan hesapla
+    for (const [category, keywords] of Object.entries(categoryKeywords)) {
+        let categoryScore = 0;
+        
+        keywords.forEach(({ word, weight }) => {
+            try {
+                // Kelime sınırlarını kontrol ederek eşleştirme yap
+                const regex = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+                const matches = (normalizedText.match(regex) || []).length;
+                categoryScore += matches * weight;
+            } catch (error) {
+                console.error(`Regex hatası (${word}):`, error);
+            }
+        });
+
+        scores[category] = categoryScore;
+        
+        if (categoryScore > maxScore) {
+            maxScore = categoryScore;
+            maxCategory = category;
+        }
+    }
+
+    // Güven skorunu hesapla (0-100 arası)
+    const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
+    const confidence = totalScore > 0 
+        ? Math.min(100, Math.round((maxScore / totalScore) * 100))
+        : 0;
+
+    // Kategori bazlı eşik değerlerini kontrol et
+    if (totalScore < (categoryThresholds[maxCategory] || 0.3) || confidence < 3) {
+        return {
+            type: 'Uncategorized',
+            confidence: 0,
+            scores: scores
+        };
+    }
+
+    // Sonuçları logla
+    console.log('📊 Kategori skorları:', {
+        maxCategory,
+        maxScore,
+        totalScore,
+        confidence,
+        scores
+    });
+
+    return {
+        type: maxCategory,
+        confidence: confidence,
+        scores: scores
+    };
+}
+
 /**
  * Kanal bilgileri ve videolara göre içerik kategorisini belirler
- * @param {Object} channelInfo - Kanal bilgileri (başlık, açıklama vb.)
- * @param {Array} videos - Kanal videoları listesi (isteğe bağlı)
+ * @param {Object} channelInfo - Kanal bilgileri (açıklama ve etiketler)
  * @returns {Object} Analiz sonuçları ve en olası kategori
  */
-function categoryExtractor(channelInfo, videos = []) {
-  // Debug: Ne tür bir nesne aldığımızı görelim
-  console.log("🔍 KATEGORİ ANALİZİ BAŞLIYOR:", channelInfo.channelTitle || 'İsimsiz Kanal');
-  
-  // Kanal alanlarını kontrol et ve uyumlu hale getir
-  const title = normalizeText(channelInfo.channelTitle || channelInfo.title || '');
-  const description = normalizeText(channelInfo.channelDescription || channelInfo.description || '');
-  
-  console.log(`🔍 Başlık: "${title.substring(0, 50)}${title.length > 50 ? '...' : ''}"`);
-  console.log(`🔍 Açıklama (ilk 50 karakter): "${description.substring(0, 50)}${description.length > 50 ? '...' : ''}"`);
-  
-  // İlk adım: Tanınmış gazeteci/kanal kontrolü
-  // Başlıkta tanınmış bir gazeteci/kanal ismi var mı kontrol et
-  for (const journalist of knownJournalists) {
-    if (title.includes(journalist.name)) {
-      console.log(`✅ TANINMIŞ GAZETECİ/KANAL TESPİT EDİLDİ: ${journalist.name}`);
-      return {
-        categoryType: journalist.category,
-        confidence: journalist.confidence,
-        cpmMultiplier: categoryCpmMultipliers[journalist.category] || categoryCpmMultipliers['Uncategorized'],
-        detectionMethod: 'known_journalist',
-        debug: {
-          matchedJournalist: journalist.name,
-          analyzedContent: {
-            title: title,
-            descriptionLength: description.length
-          }
+function categoryExtractor(channelInfo) {
+    try {
+        if (!channelInfo) {
+            console.warn('Kanal bilgisi bulunamadı');
+            return { type: 'Uncategorized', confidence: 0, scores: {} };
         }
-      };
-    }
-  }
-  
-  // Videolardan kullanılacak metinleri al - ilk 5 videoyu analiz et
-  const videoLimit = Math.min(videos.length, 5);
-  const videoTexts = videos.slice(0, videoLimit).map(video => {
-    const videoTitle = normalizeText(video.title || '');
-    const videoDescription = normalizeText(video.description || '');
-    const videoTags = Array.isArray(video.tags) 
-      ? normalizeText(video.tags.join(' ')) 
-      : '';
-    
-    return `${videoTitle} ${videoTitle} ${videoDescription} ${videoTags}`; // Video başlığına daha fazla ağırlık ver
-  }).join(' ');
-  
-  // Video metinlerini kontrol et
-  if (videos.length > 0) {
-    console.log(`🔍 ${videoLimit} video metni analiz ediliyor (toplam ${videos.length} videodan)`);
-  } else {
-    console.log("⚠️ Video bulunamadı, sadece kanal bilgileri kullanılıyor");
-  }
-  
-  // Kanal açıklamasından ilk 500 karakteri kullan - en önemli bilgiler genelde başta olur
-  const truncatedDescription = description.substring(0, 500);
-  
-  // Tüm metinleri birleştir - içerik türlerine farklı ağırlıklar ver
-  const combinedText = `${title} ${title} ${title} ${truncatedDescription} ${truncatedDescription} ${videoTexts}`;
-  
-  // Toplam metin uzunluğunu logla
-  console.log(`🔍 Toplam analiz metni: ${combinedText.length} karakter`);
-  
-  // Haber özelliği kontrol - Açıklamanın ilk 100 karakterinde "gazeteci", "yazar", "sunucu" kelimeleri geçiyor mu?
-  const firstPartOfDescription = description.substring(0, 100).toLowerCase();
-  if (firstPartOfDescription.includes('gazeteci') || 
-      firstPartOfDescription.includes('yazar') || 
-      firstPartOfDescription.includes('sunucu') ||
-      firstPartOfDescription.includes('spiker') ||
-      firstPartOfDescription.includes('yorumcu')) {
-    console.log("✅ HABER/MEDYA İÇERİĞİ BELİRTECİ TESPİT EDİLDİ: Açıklamanın başında medya terimi var");
-    // Bu bir ipucu olacak, skora ekstra katkı sağlayacak
-  }
-  
-  // Her kategori için skor hesapla
-  const scores = {};
-  const rawScores = {}; // Ağırlıksız ham skorlar
-  let totalWeightedMatches = 0;
-  let totalRawMatches = 0;
-  let matchDetails = {}; // Hangi anahtar kelimelerin eşleştiğini tutacak
-  
-  // Eski kategoriler için geriye dönük uyumluluk
-  for (const category in categoryKeywords) {
-    scores[category] = 0;
-    rawScores[category] = 0;
-    matchDetails[category] = [];
-    
-    // Kategori için anahtar kelimeleri kontrol et
-    const keywords = categoryKeywords[category];
-    
-    // Anahtar kelimeler array formatında mı yoksa obje formatında mı kontrol et
-    if (Array.isArray(keywords)) {
-      // Eski format - basit string dizisi
-      for (const keyword of keywords) {
-        if (typeof keyword === 'string') {
-          // Regex olarak anahtar kelime ile eşleşme ara (tam kelime)
-          const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-          const matches = (combinedText.match(regex) || []).length;
-          
-          if (matches > 0) {
-            // Her eşleşme için skoru artır (varsayılan ağırlık: 1.0)
-            scores[category] += matches;
-            rawScores[category] += matches;
-            totalWeightedMatches += matches;
-            totalRawMatches += matches;
-            matchDetails[category].push(`${keyword} (${matches})`);
-          }
-        }
-      }
-    } else {
-      // Yeni format - obje dizisi {word, weight}
-      for (const keywordObj of keywords) {
-        if (typeof keywordObj === 'object' && keywordObj.word && keywordObj.weight) {
-          const keyword = keywordObj.word;
-          const weight = keywordObj.weight || 1.0;
-          
-          // Regex olarak anahtar kelime ile eşleşme ara (tam kelime)
-          const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-          const matches = (combinedText.match(regex) || []).length;
-          
-          if (matches > 0) {
-            // Her eşleşme için ağırlıklı skoru artır
-            const weightedMatches = matches * weight;
-            scores[category] += weightedMatches;
-            rawScores[category] += matches; // Ham eşleşme sayısı
-            totalWeightedMatches += weightedMatches;
-            totalRawMatches += matches;
-            matchDetails[category].push(`${keyword} (${matches}x${weight.toFixed(1)}=${weightedMatches.toFixed(1)})`);
-          }
-        }
-      }
-    }
-  }
-  
-  // Açıklamanın başlangıcında haber içeriği ipuçları varsa News skoruna ekstra katkı sağla
-  if (firstPartOfDescription.includes('gazeteci') || 
-      firstPartOfDescription.includes('yazar') || 
-      firstPartOfDescription.includes('sunucu') ||
-      firstPartOfDescription.includes('spiker') ||
-      firstPartOfDescription.includes('yorumcu')) {
-    scores['News'] += 10.0; // Önemli bir bonus ekle
-    console.log("🔍 News kategorisine medya terimi bonusu: +10.0 puan");
-  }
-  
-  // Eşleşme sayılarını logla
-  console.log(`🔍 Toplam eşleşme sayısı: ${totalRawMatches} (ağırlıklı: ${totalWeightedMatches.toFixed(1)})`);
-  
-  // Skoru yüksek olan kategorileri logla (en fazla 3 tane)
-  const topCategories = Object.entries(scores)
-    .filter(([_, score]) => score > 0)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3);
-  
-  if (topCategories.length > 0) {
-    console.log("🔍 En yüksek skorlu kategoriler:");
-    topCategories.forEach(([category, score]) => {
-      console.log(`   - ${category}: ${score.toFixed(1)} puan, Eşleşen kelimeler: ${matchDetails[category].join(', ')}`);
-    });
-  } else {
-    console.log("⚠️ Hiçbir kategoriyle eşleşme bulunamadı!");
-  }
-  
-  // En yüksek skora sahip kategoriyi bul
-  let maxScore = 0;
-  let maxCategory = 'Uncategorized';
-  let secondCategory = null; // İkinci en yüksek kategori
-  let confidence = 0;
-  
-  // En yüksek ve ikinci en yüksek kategorileri bul
-  const sortedCategories = Object.entries(scores)
-    .filter(([_, score]) => score > 0)
-    .sort((a, b) => b[1] - a[1]);
-  
-  if (sortedCategories.length > 0) {
-    maxCategory = sortedCategories[0][0];
-    maxScore = sortedCategories[0][1];
-    
-    if (sortedCategories.length > 1) {
-      secondCategory = sortedCategories[1][0];
-    }
-  }
-  
-  // Eğer hiçbir anahtar kelime eşleşmezse veya çok düşük bir skor varsa, özel işlem yap
-  if (totalRawMatches === 0) {
-    console.log("⚠️ Hiçbir anahtar kelime eşleşmedi, kanal başlığında manuel kontrol yapılıyor...");
-    
-    // Başlıktaki kelime sayısı az olabileceğinden, daha esnek bir eşleştirme yap
-    // Kanal başlığını tek tek kelimelerine ayır
-    const titleWords = title.split(/\s+/).filter(word => word.length > 3); // 3 karakterden uzun kelimeler
-    const descriptionWords = truncatedDescription.split(/\s+/).filter(word => word.length > 3);
-    
-    console.log(`🔍 Başlıktaki anahtar kelimeler: ${titleWords.join(', ')}`);
-    console.log(`🔍 Açıklamadaki kelime sayısı: ${descriptionWords.length}`);
-    
-    // Gazeteci kontrolü - yeniden kontrol et 
-    for (const journalist of knownJournalists) {
-      const journalistParts = journalist.name.split(/\s+/);
-      // Bir kişinin adı ve soyadı ayrı ayrı başlıkta geçebilir
-      if (journalistParts.every(part => titleWords.some(word => word.includes(part) || part.includes(word)))) {
-        console.log(`✅ TANINMIŞ GAZETECİ TESPİT EDİLDİ (kelime eşleşmesiyle): ${journalist.name}`);
-        maxCategory = journalist.category;
-        confidence = journalist.confidence;
-        scores[maxCategory] = 10.0; // Önemli bir bonus ekle
-        totalWeightedMatches += 10.0;
-        totalRawMatches += 1;
-        break;
-      }
-    }
-    
-    // Her bir kategorideki anahtar kelimeleri kontrol et
-    for (const category in categoryKeywords) {
-      const keywords = categoryKeywords[category];
-      
-      // Başlıktaki ve açıklamadaki her kelime için kontrol et
-      const allWords = [...titleWords, ...descriptionWords.slice(0, 50)]; // Açıklama kelimelerinden ilk 50'sini al
-      
-      for (const word of allWords) {
-        // Her anahtar kelime için kısmi eşleşme ara (içinde var mı diye)
-        if (Array.isArray(keywords)) {
-          // Eski format
-          for (const keyword of keywords) {
-            if (typeof keyword === 'string' && 
-                (keyword.includes(word) || word.includes(keyword)) && 
-                word.length > 3 && keyword.length > 3) {
-              console.log(`🔍 Kısmi eşleşme bulundu: "${word}" -> "${keyword}" (${category})`);
-              scores[category] += 0.5; // Kısmi eşleşmelerde daha düşük puan ver
-              rawScores[category] += 1;
-              totalWeightedMatches += 0.5;
-              totalRawMatches += 1;
-            }
-          }
-        } else {
-          // Yeni format
-          for (const keywordObj of keywords) {
-            if (typeof keywordObj === 'object' && keywordObj.word && keywordObj.weight) {
-              const keyword = keywordObj.word;
-              const weight = keywordObj.weight * 0.5; // Kısmi eşleşmelerde ağırlığı yarıya düşür
-              
-              if ((keyword.includes(word) || word.includes(keyword)) && 
-                  word.length > 3 && keyword.length > 3) {
-                console.log(`🔍 Kısmi eşleşme bulundu: "${word}" -> "${keyword}" (${category})`);
-                scores[category] += weight;
-                rawScores[category] += 1;
-                totalWeightedMatches += weight;
-                totalRawMatches += 1;
-              }
-            }
-          }
-        }
-      }
-    }
-    
-    // Tekrar en yüksek skora sahip kategoriyi bul
-    const resortedCategories = Object.entries(scores)
-      .filter(([_, score]) => score > 0)
-      .sort((a, b) => b[1] - a[1]);
-      
-    if (resortedCategories.length > 0) {
-      maxCategory = resortedCategories[0][0];
-      maxScore = resortedCategories[0][1];
-      
-      if (resortedCategories.length > 1) {
-        secondCategory = resortedCategories[1][0];
-      }
-    }
-    
-    // Hala eşleşme yoksa, son çare olarak kanal başlığında içerik türünü ara
-    if (totalRawMatches === 0) {
-      console.log("⚠️ Hala eşleşme bulunamadı, kanal adı içerik ipuçlarına bakılıyor...");
-      
-      // Kanal açıklamasında genişletilmiş medya/haber kontrolü
-      if (description.includes('gazeteci') || 
-          description.includes('yazar') || 
-          description.includes('yorumcu') || 
-          description.includes('sunucu') || 
-          description.includes('haber') || 
-          description.includes('gündem') || 
-          description.includes('siyaset') || 
-          description.includes('yorumluyor') || 
-          description.includes('yorumları')) {
-        console.log("✅ Açıklamada HABER/MEDYA terimleri tespit edildi");
-        maxCategory = 'News';
-        confidence = 70; // Daha yüksek bir güven skoru ver
-      }
-      // Eğer hala bir kategori belirlenemezse, yaygın içerik türleri için basit kontrol yap
-      else {
-        // Yaygın içerik türleri için basit kontrol - daha hassas kontroller ekle
-        const titleLower = title.toLowerCase();
-        const descLower = description.toLowerCase();
-        const combinedLower = titleLower + " " + descLower.substring(0, 200); // Başlık ve açıklamanın ilk kısmı
+
+        // Sadece açıklama ve etiketleri kullan
+        const channelText = [
+            channelInfo.channelDescription || '',     // Açıklama
+            Array.isArray(channelInfo.tags) ? channelInfo.tags.join(' ').repeat(2) : ''  // Etiketler (2 kez tekrarlanarak ağırlığı artırılıyor)
+        ].join(' ');
+
+        const result = keywordBasedAnalysis(channelText);
         
-        if (combinedLower.includes('game') || combinedLower.includes('oyun') || 
-            combinedLower.includes('play') || combinedLower.includes('gaming')) {
-          maxCategory = 'Gaming';
-        } else if (combinedLower.includes('vlog') || combinedLower.includes('daily') || 
-                  combinedLower.includes('hayat') || combinedLower.includes('günlük')) {
-          maxCategory = 'Vlog';
-        } else if (combinedLower.includes('tech') || combinedLower.includes('teknoloji') || 
-                  combinedLower.includes('review') || combinedLower.includes('inceleme')) {
-          maxCategory = 'Tech';
-        } else if (combinedLower.includes('news') || combinedLower.includes('haber') || 
-                  combinedLower.includes('gündem') || combinedLower.includes('son dakika')) {
-          maxCategory = 'News';
-        } else if (combinedLower.includes('education') || combinedLower.includes('eğitim') || 
-                  combinedLower.includes('lesson') || combinedLower.includes('ders')) {
-          maxCategory = 'Education';
-        } else if (combinedLower.includes('cook') || combinedLower.includes('yemek') || 
-                  combinedLower.includes('recipe') || combinedLower.includes('tarif')) {
-          maxCategory = 'Cooking';
-        } else if (combinedLower.includes('beauty') || combinedLower.includes('güzellik') || 
-                  combinedLower.includes('makeup') || combinedLower.includes('makyaj')) {
-          maxCategory = 'Beauty';
-        } else if (combinedLower.includes('finance') || combinedLower.includes('finans') || 
-                  combinedLower.includes('money') || combinedLower.includes('para')) {
-          maxCategory = 'Finance';
-        } else if (combinedLower.includes('sport') || combinedLower.includes('spor') || 
-                  combinedLower.includes('football') || combinedLower.includes('futbol')) {
-          maxCategory = 'Sports';
-        } else {
-          // İçerik bulunamazsa, Uncategorized kategorisini kullan
-          maxCategory = 'Uncategorized';
-          console.log("⚠️ Hiçbir kategori belirlenemedi, 'Uncategorized' olarak işaretleniyor");
-        }
-      }
+        console.log('📊 Kategori analizi:', {
+            channelDescription: channelInfo.channelDescription?.substring(0, 50) + '...',
+            tags: channelInfo.tags,
+            result: result
+        });
+
+        return result;
+    } catch (error) {
+        console.error('Kategori analizi hatası:', error);
+        return {
+            type: 'Uncategorized',
+            confidence: 0,
+            scores: {}
+        };
     }
-  }
-  
-  // Güven skoru hesapla (en yüksek kategori skoru / toplam eşleşme sayısı)
-  if (confidence === 0) { // Daha önce bir güven skoru atanmadıysa hesapla
-    if (totalWeightedMatches > 0) {
-      confidence = Math.round((maxScore / totalWeightedMatches) * 100);
-    } else {
-      // Hiç eşleşme yoksa, düşük bir güven skoru ver
-      confidence = 20; // %20 güven
-    }
-  }
-  
-  console.log(`✅ KATEGORİ BELİRLENDİ: ${maxCategory} (Güven: %${confidence})`);
-  
-  // Alternatif kategori önerisi (düşük güven skoru durumunda)
-  let alternativeCategory = null;
-  let alternativeConfidence = 0;
-  
-  if (confidence < 60 && secondCategory) {
-    alternativeCategory = secondCategory;
-    const secondScore = scores[secondCategory];
-    alternativeConfidence = Math.round((secondScore / totalWeightedMatches) * 100);
-    console.log(`ℹ️ ALTERNATİF KATEGORİ ÖNERİSİ: ${alternativeCategory} (Güven: %${alternativeConfidence})`);
-  }
-  
-  // Sonuçları döndür
-  return {
-    categoryType: maxCategory,
-    scores: scores,
-    rawScores: rawScores, 
-    confidence: confidence,
-    cpmMultiplier: categoryCpmMultipliers[maxCategory] || categoryCpmMultipliers['Uncategorized'],
-    // Alternatif kategori bilgileri
-    alternativeCategory: alternativeCategory,
-    alternativeConfidence: alternativeConfidence,
-    // Eşleşmeyen arama sırasında detayları da sağla (frontend'de kullanılabilir)
-    debug: {
-      totalMatches: totalRawMatches,
-      totalWeightedMatches: totalWeightedMatches,
-      analyzedContent: {
-        title: title,
-        descriptionLength: description.length,
-        analyzedDescription: truncatedDescription.length,
-        videosCount: videos.length,
-        analyzedVideos: videoLimit
-      },
-      matchDetails: matchDetails
-    }
-  };
 }
 
 /**
@@ -1210,14 +860,14 @@ function generateCategoryReport(analysisResult) {
     return 'Analiz sonucu bulunamadı.';
   }
   
-  const { categoryType, scores, confidence } = analysisResult;
+  const { type, scores, confidence } = analysisResult;
   
   // Skorları sırala
   const sortedScores = Object.entries(scores)
     .filter(([_, score]) => score > 0)
     .sort((a, b) => b[1] - a[1]);
   
-  let report = `📊 Kategori Analizi: ${categoryType} (${confidence}% emin)\n\n`;
+  let report = `📊 Kategori Analizi: ${type} (${confidence}% emin)\n\n`;
   
   if (sortedScores.length === 0) {
     report += 'Hiçbir kategori ile eşleşme bulunamadı.';

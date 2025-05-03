@@ -77,22 +77,6 @@ videoSchema.pre('save', function(next) {
   next();
 });
 
-// Kazanç hesaplama metodu
-videoSchema.methods.calculateEarnings = function() {
-  // Basit hesaplama: Görüntüleme başına $0.001 - $0.003 arası kazanç (tipik YouTube oranları)
-  // Video kalitesi, uzunluğu, izleyici kitlesi gibi faktörlere göre değişebilir
-  const minRate = 0.001;
-  const maxRate = 0.003;
-  
-  this.estimatedEarnings = {
-    min: Math.round(this.viewCount * minRate * 100) / 100,
-    max: Math.round(this.viewCount * maxRate * 100) / 100,
-    currency: 'USD'
-  };
-  
-  return this.estimatedEarnings;
-};
-
 const Video = mongoose.model('Video', videoSchema);
 
 module.exports = Video; 

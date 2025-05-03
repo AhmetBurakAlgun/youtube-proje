@@ -4,9 +4,9 @@ const {
   getChannelInfo, 
   getChannelVideos, 
   findChannelId, 
-  calculateEarnings,
-  advancedCalculateEarnings 
 } = require('../utils/youtubeAPI');
+const { formatters } = require('../utils/formatters.js');
+const { kazancHesapla } = require('../utils/kazancService');
 
 // Yeni kanal ekle
 exports.addChannel = async (req, res) => {
@@ -36,7 +36,8 @@ exports.addChannel = async (req, res) => {
     const newChannel = new Channel(channelData);
     
     // Kazançları hesapla
-    newChannel.calculateEarnings();
+    const earnings = await kazancHesapla(channelData);
+    channelData.estimatedEarnings = earnings;
     
     // Kanalı kaydet
     await newChannel.save();
@@ -75,29 +76,31 @@ exports.getAllChannels = async (req, res) => {
         
         // Kazançları hesapla - GELİŞMİŞ KAZANÇ HESAPLAYICISINI KULLANALIM
         // İlk olarak basit hesaplayıcıyı kullanıyoruz
-        const earnings = calculateEarnings(channelData.viewCount);
+        const earnings = await kazancHesapla(channelData);
         
         // Sonra gelişmiş hesaplayıcı ile üzerine yazıyoruz
         try {
-          const advancedEarnings = await advancedCalculateEarnings(channelData);
+          const advancedEarnings = await kazancHesapla(channelData);
           channelData.estimatedEarnings = advancedEarnings;
           
-          // ÖNEMLİ: Kategori bilgilerini doğrudan kanal nesnesine de ekle
+          // Kategori bilgilerini doğrudan ekle
           channelData.categoryInfo = advancedEarnings.categoryInfo;
           channelData.multipliers = advancedEarnings.multipliers;
           
-          console.log(`Gelişmiş kazanç hesaplaması yapıldı: ${advancedEarnings.categoryInfo?.type || 'Kategorisiz'}`);
-        } catch (earningsError) {
-          console.error(`Gelişmiş kazanç hesaplaması hatası, basit hesaplama kullanılıyor: ${earningsError.message}`);
+          // Earnings nesnesine de ekle
+          channelData.earnings = {
+            estimatedEarnings: advancedEarnings,
+            categoryInfo: advancedEarnings.categoryInfo,
+            multipliers: advancedEarnings.multipliers
+          };
+          
+          console.log('Kategori bilgisi:', advancedEarnings.categoryInfo);
+        } catch (error) {
+          console.error('Gelişmiş kazanç hesaplama hatası:', error);
           channelData.estimatedEarnings = earnings;
+          channelData.categoryInfo = { type: 'Uncategorized', confidence: 0 };
+          channelData.multipliers = { category: 1.0, geographic: 1.0, channelSize: 1.0, activity: 1.0 };
         }
-        
-        // Earnings nesnesini earnings özelliği altında da ekle
-        channelData.earnings = {
-          estimatedEarnings: channelData.estimatedEarnings,
-          categoryInfo: channelData.categoryInfo,
-          multipliers: channelData.multipliers
-        };
         
         // ÖNEMLİ: Kanalı otomatik olarak veritabanına kaydet veya güncelle
         // Kanal zaten var mı kontrol et
@@ -169,9 +172,18 @@ exports.getAllChannels = async (req, res) => {
     // MongoDB bağlantısını kullanarak veritabanından kanalları çek
     const channels = await Channel.find().sort({ subscriberCount: -1 });
     
+    // Kanal verilerini formatla
+    const formattedChannels = channels.map(channel => ({
+      ...channel.toObject(),
+      formattedSubscribers: formatters.number(channel.subscriberCount),
+      formattedViews: formatters.number(channel.viewCount),
+      formattedDate: formatters.date(channel.publishedAt),
+      channelAge: formatters.channelAge(channel.publishedAt)
+    }));
+    
     res.status(200).json({
-      count: channels.length,
-      channels
+      count: formattedChannels.length,
+      channels: formattedChannels
     });
   } catch (error) {
     console.error('Kanallar listelenirken hata oluştu:', error);
@@ -225,15 +237,16 @@ exports.updateChannel = async (req, res) => {
     // YouTube API'den en güncel kanal bilgilerini al
     const channelData = await getChannelInfo(channelId);
     
+    // Kazançları hesapla
+    const earnings = await kazancHesapla(channelData);
+    channelData.estimatedEarnings = earnings;
+    
     // Kanal bilgilerini güncelle
     channel.subscriberCount = channelData.subscriberCount;
     channel.viewCount = channelData.viewCount;
     channel.videoCount = channelData.videoCount;
     channel.thumbnailUrl = channelData.thumbnailUrl;
     channel.lastUpdated = Date.now();
-    
-    // Kazançları güncelle
-    channel.calculateEarnings();
     
     // Kanalı kaydet
     await channel.save();
@@ -319,17 +332,11 @@ exports.syncChannelVideos = async (req, res) => {
         video.commentCount = videoData.commentCount;
         video.lastUpdated = Date.now();
         
-        // Kazançları güncelle
-        video.calculateEarnings();
-        
         await video.save();
         updatedCount++;
       } else {
         // Yeni video oluştur
         const newVideo = new Video(videoData);
-        
-        // Kazançları hesapla
-        newVideo.calculateEarnings();
         
         await newVideo.save();
         addedCount++;
@@ -450,7 +457,7 @@ exports.searchChannel = async (req, res) => {
     
     // Gelişmiş kazanç hesaplama
     const startTimeEarnings = Date.now();
-    const estimatedEarnings = advancedCalculateEarnings(channelInfo);
+    const estimatedEarnings = await kazancHesapla(channelInfo);
     channelInfo.estimatedEarnings = estimatedEarnings;
     
     // ÖNEMLİ: KATEGORI VE ÇARPAN BİLGİLERİNİ KANAL NESNESINE DOĞRUDAN DA EKLE
@@ -459,7 +466,7 @@ exports.searchChannel = async (req, res) => {
     channelInfo.multipliers = estimatedEarnings.multipliers;
     
     apiQuotaUsage.details.push({
-      operation: 'advancedCalculateEarnings',
+      operation: 'kazancHesapla',
       endpoint: 'local',
       cost: 0,
       time: Date.now() - startTimeEarnings

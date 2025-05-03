@@ -1,51 +1,176 @@
-# 📌 Geliştirme Planı ve Öneriler
+# DEVNOTE: Proje Geliştirme Kılavuzu
 
-## ✅ Genel Teknik Strateji
-- **Önce web, sonra mobil**: Web versiyonu test edildikten sonra React Native veya Flutter ile mobil geliştirilebilir.
-- **Backend’siz başlamak ama uzun vadede API proxy kullanmak**: API key güvenliği için Express.js tabanlı bir backend önerilir.
-- **Vercel üzerinde deploy**: Hızlı ve ölçeklenebilir bir yapı için uygun.
+## PROJE AMACI
+- YouTube kanallarının kazanç ve istatistiklerini şeffaf ve gerçekçi şekilde göstermek
+- Kullanıcılara basit, hızlı ve anlaşılır bir arayüz sunmak
+- Farklı içerik türlerine göre (normal video, shorts, live stream) özelleştirilmiş kazanç tahminleri sağlamak
+- Trend analizleri ve karşılaştırmalı istatistikler sunmak
 
----
+## TEMEL PRENSİPLER
+1. Basitlik Önceliği
+   - Karmaşık özellikler yerine işlevsel basitlik
+   - Kullanıcı dostu arayüz
+   - Hızlı sonuç gösterimi
+   - Anlaşılır veri sunumu
 
-## 🔄 Backend ve API Yönetimi
-- **API Key Rotasyonu**: YouTube API kotası dolduğunda otomatik diğer key’e geçiş.
-- **Cache Kullanımı (NodeCache veya Redis)**: Aynı isteklere defalarca API çağrısı yapmamak için caching uygulanmalı.
-- **JWT doğrulama ile Premium Kullanıcı Ayrımı**: Sınırsız kullanım veya detaylı analiz için premium erişim mekanizması.
+2. Gerçekçi Yaklaşım
+   - Abartılı kazanç tahminlerinden kaçınma
+   - Şeffaf hesaplama yöntemleri
+   - Güncel CPM oranları kullanımı
+   - İçerik türüne özel hesaplamalar
 
----
+3. Performans Odaklılık
+   - Hızlı yüklenme süreleri
+   - Minimum API çağrısı
+   - Optimize edilmiş kod yapısı
+   - Verimli veri önbelleği
 
-## 📊 Gelişmiş Analiz ve Kullanıcı Deneyimi
-- **Geçen ay / bu ay kıyaslaması** (Kazanç, görüntülenme vs.)
-- **En çok yorum yapan kullanıcılar** (Top 10 en çok yorum yapanları listele)
-- **En çok kazandıran videoların listesi**
-- **Kategori & ülke bazlı farklı CPM çarpanları**
-- **Günlük, haftalık, aylık tahmini kazanç hesaplama**
-- **Yorum + Beğeni + İzlenme korelasyonları**
-- **YouTube Shorts & Canlı Yayın analizleri** (Standart videolardan farklı CPM ile hesaplama)
+## GELİŞTİRME KURALLARI
+1. Kod Yapısı
+   - Overengineering'den kaçınılacak
+   - Basit ve okunabilir kod
+   - Gerekmedikçe yeni kütüphane eklenmeyecek
+   - Modüler yapı korunacak
 
----
+2. Hata Yönetimi
+   - Basit try-catch yapısı yeterli
+   - Kullanıcı dostu hata mesajları
+   - API hatalarına özel kontroller
+   - Yükleme durumları gösterimi
 
-## 📱 Mobil Uygulama Stratejisi
-- **React Native veya Flutter ile geliştirme**
-- **Push bildirimleri** (Kazanç artışı, analiz önerileri vb.)
-- **Plus üyelik modeli (₺19,99 gibi düşük ücretle detaylı analizler ve reklamsız kullanım)**
-- **Mobilde offline analiz geçmişi görüntüleme** (Cache mekanizmasıyla)
+3. Tasarım İlkeleri
+   - Mobil öncelikli tasarım
+   - Sade renk paleti
+   - Kolay okunabilir yazı tipleri
+   - Tutarlı UI elementleri
 
----
+## PLATFORM GELİŞTİRME PLANI
+1. Web Uygulaması (Mevcut)
+   - Responsive tasarım
+   - Tüm tarayıcı desteği
+   - PWA özellikleri
 
-## 💰 Gelir Modelleri
-- **Plus Üyelik (Premium analizler, reklamsız kullanım)**
-- **AdSense (Web) / AdMob (Mobil) ile reklam geliri**
-- **Affiliate marketing (TubeBuddy, vidIQ entegrasyonu)**
-- **Sponsorlu içerik & reklam alanı satışı**
+2. Mobil Uygulama (Planlanan)
+   - Native app geliştirmesi
+   - iOS ve Android platformları
+   - Offline çalışma desteği
+   - Push bildirim sistemi
+   - App Store ve Play Store yayını
 
----
+## YAPILACAKLAR LİSTESİ
 
-## 🚀 Uzun Vadeli Geliştirme Fikirleri
-- **Kanal analiz geçmişi tutma (30 günlük kayıt)**  
-- **Kanal karşılaştırma özelliği** (Kendi kanalını rakiplerle kıyasla)  
-- **YouTube Shorts, Canlı Yayın ve Normal Video ayrımı yapabilme**  
-- **Mobilde offline analiz geçmişini gösterme**  
-- **Public kanal arama motoru** (Herkes istediği kanalı analiz edebilir)  
+### İçerik Analizi Geliştirmeleri
+- [ ] Top Video Analizleri
+  - En çok izlenen videolar (Top 5)
+  - En çok kazandıran videolar (Top 5)
+  - En çok etkileşim alan videolar (Top 5)
+  - Video türüne göre performans karşılaştırması
 
----
+- [ ] Shorts Özel Analizi
+  - Shorts içeriklerinin ayrı kazanç hesaplaması
+  - Shorts CPM farklılaştırması
+  - Shorts/Normal video oranı analizi
+  - Shorts performans metrikleri
+
+### Bölgesel ve Kategori Analizleri
+- [ ] Ülke Bazlı Analizler
+  - Ülkelere göre en çok kazanan kanallar
+  - Dil bazlı kanal sıralamaları
+  - Bölgesel CPM farklılıkları
+  - Yerel trend analizleri
+
+### Aylık Değişim Analizi
+- [ ] Performans Değişimleri
+  - Abone sayısı değişim yüzdesi
+  - Görüntülenme değişim yüzdesi
+  - Kazanç değişim yüzdesi
+  - Artış/düşüş trendlerinin görsel gösterimi
+
+### Etkileşim ve Topluluk Analizi
+- [ ] Kullanıcı Etkileşimleri
+  - En çok yorum yapan kullanıcıların listesi
+  - Top 10 aktif kullanıcı istatistikleri
+  - Yorum yapma sıklığı analizi
+
+### Gelişmiş Kazanç Hesaplaması
+- [ ] Özelleştirilmiş CPM Hesaplamaları
+  - Live Stream CPM farklılaştırması
+  - Shorts CPM hesaplaması
+  - Stream uzunluğuna göre özel çarpanlar
+  - Canlı yayın Super Chat gelirlerinin ayrı hesaplanması
+
+### UI/UX İyileştirmeleri
+- [ ] Görsel Geliştirmeler
+  - İstatistik kartlarının yeniden tasarlanması
+  - Trend göstergeleri için renkli ikonlar
+  - Yüzdesel değişimlerin görsel sunumu
+  - Mobil görünümün optimize edilmesi
+  - Yükleme animasyonlarının eklenmesi
+
+### Yeni Önerilen Geliştirmeler
+- [ ] Video Kategori Analizi
+  - İçerik türüne göre performans karşılaştırması
+  - Kategori bazlı kazanç analizi
+  - En başarılı içerik türü önerileri
+
+- [ ] Sezonsal Analiz
+  - Yıllık performans grafikleri
+  - Mevsimsel trend analizi
+  - En verimli yayın zamanları analizi
+
+## TEKNİK ALTYAPI PLANI
+1. Deployment Stratejisi
+   - Vercel üzerinde hosting
+   - Hızlı ve ölçeklenebilir yapı
+   - Otomatik deployment
+
+2. Backend Yapılandırması
+   - Express.js tabanlı API proxy
+   - API Key rotasyonu sistemi
+   - Cache mekanizması (NodeCache/Redis)
+   - JWT ile kullanıcı yönetimi
+
+## BUG TAKİBİ
+### Bilinen Hatalar
+1. [Düşük] Bazı kanallarda banner yüklenmiyor
+2. [Orta] Türkçe karakterlerde arama sorunu
+3. [Yüksek] Çok uzun kanal isimlerinde tasarım bozulması
+
+## GELİŞTİRME PLANI
+### Kısa Vadeli (1-2 Hafta)
+- Mevcut hataların düzeltilmesi
+- Temel SEO optimizasyonu
+- Performans iyileştirmeleri
+
+### Orta Vadeli (1-2 Ay)
+- Yeni istatistik grafikleri
+- Detaylı kazanç analizi
+- Kanal karşılaştırma özelliği
+
+### Uzun Vadeli (3+ Ay)
+- Trend analizi
+- Gelişmiş tahmin algoritmaları
+- Kategori bazlı analizler
+
+## KISITLAMALAR VE ŞARTLAR
+1. Proje Kapsamı
+   - Sadece YouTube istatistikleri
+   - Sadece public veriler kullanılacak
+   - Gereksiz özellikler eklenmeyecek
+
+2. Teknik Sınırlar
+   - YouTube API limitleri gözetilecek
+   - Basit ve hafif altyapı korunacak
+   - Minimum dış bağımlılık
+
+3. İş Kuralları
+   - Ücretsiz kullanım öncelikli
+   - Reklam entegrasyonu düşünülüyor
+   - Kullanıcı verisi toplanmayacak
+
+## ÇOK UZUN VADELİ PLANLAR (Düşünülüyor)
+1. Premium Özellikler
+   - Plus üyelik sistemi potansiyeli
+   - Detaylı analiz araçları
+   - Reklamsız deneyim imkanı
+   - 30 günlük analiz geçmişi

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const { formatters } = require('../utils/formatters.js');
 
 // YouTube kanalı şeması
 const channelSchema = new Schema({
@@ -118,32 +119,6 @@ channelSchema.pre('save', function(next) {
   this.lastUpdated = Date.now();
   next();
 });
-
-// Kazanç hesaplama metodu
-channelSchema.methods.calculateEarnings = function() {
-  // Basit hesaplama: Görüntüleme başına $0.001 - $0.003 arası kazanç (tipik YouTube oranları)
-  const minRate = 0.001;
-  const maxRate = 0.003;
-  
-  this.estimatedEarnings = {
-    min: Math.round(this.viewCount * minRate * 100) / 100,
-    max: Math.round(this.viewCount * maxRate * 100) / 100,
-    breakdown: {
-      ads: Math.round(this.viewCount * 0.001 * 100) / 100,
-      sponsorships: Math.round(this.viewCount * 0.002 * 100) / 100,
-      memberships: Math.round(this.viewCount * 0.001 * 100) / 100,
-      merchandise: Math.round(this.viewCount * 0.002 * 100) / 100
-    },
-    factors: {
-      categoryType: 'Entertainment',
-      engagementBonus: 1.0,
-      durationMultiplier: 1.0,
-      channelSizeMultiplier: 1.0
-    }
-  };
-  
-  return this.estimatedEarnings;
-};
 
 const Channel = mongoose.model('Channel', channelSchema);
 

@@ -99,7 +99,7 @@ const handleUIError = (error, context = {}) => {
 };
 
 // Loading göstergesi
-export const showLoading = () => {
+const showLoading = () => {
   try {
     const loadingElement = document.getElementById('loading');
     if (loadingElement) {
@@ -110,7 +110,7 @@ export const showLoading = () => {
   }
 };
 
-export const hideLoading = () => {
+const hideLoading = () => {
   try {
     const loadingElement = document.getElementById('loading');
     if (loadingElement) {
@@ -122,7 +122,7 @@ export const hideLoading = () => {
 };
 
 // Hata mesajı
-export const showError = (message) => {
+const showError = (message) => {
   try {
     const errorElement = document.getElementById('error-container');
     if (errorElement) {
@@ -138,7 +138,7 @@ export const showError = (message) => {
 };
 
 // Sonuçları sıfırlama
-export const resetResults = () => {
+const resetResults = () => {
   try {
     const resultsContainer = document.getElementById('results');
     if (resultsContainer) {
@@ -150,7 +150,7 @@ export const resetResults = () => {
 };
 
 // Arama animasyonu
-export const applySearchAnimation = () => {
+const applySearchAnimation = () => {
   try {
     const searchButton = document.getElementById('search-button');
     if (searchButton) {
@@ -165,7 +165,7 @@ export const applySearchAnimation = () => {
 };
 
 // Kanal bilgilerini gösterme
-export const displayChannelInfo = (channelData) => {
+const displayChannelInfo = (channelData) => {
   try {
     const resultsContainer = document.getElementById('results');
     if (!resultsContainer) {
@@ -250,8 +250,16 @@ const createStatsElement = (data) => {
 const createEarningsElement = (data) => {
   const earnings = document.createElement('div');
   earnings.className = 'channel-earnings';
+  
+  // Kategori bilgisini her iki konumdan da almayı dene
+  const categoryInfo = data.earnings?.categoryInfo || data.categoryInfo || { type: 'Kategorisiz', confidence: 0 };
+  
   earnings.innerHTML = `
     <h3>Tahmini Kazanç</h3>
+    <div class="earnings-category">
+      <span class="category-label">Kategori:</span>
+      <span class="category-value">${categoryInfo.type} (${categoryInfo.confidence.toFixed(1)}% güven)</span>
+    </div>
     <div class="earnings-grid">
       <div class="earnings-item">
         <span class="earnings-label">Günlük</span>

@@ -114,7 +114,7 @@ const handleApiError = (error, context = {}) => {
 };
 
 // Kanal bilgilerini getir
-export const fetchChannelInfo = async (channelId) => {
+const fetchChannelInfo = async (channelId) => {
   try {
     // Önbellekten kontrol et
     const cachedData = getCachedChannelData(channelId);
@@ -139,32 +139,28 @@ export const fetchChannelInfo = async (channelId) => {
 };
 
 // Banner görüntüsünü getir
-export const fetchBannerImage = async (channelId, bannerUrl) => {
+const fetchBannerImage = async (channelId, bannerUrl) => {
   try {
-    // Önbellekten kontrol et
-    const cachedBannerUrl = getCachedBannerUrl(channelId);
-    if (cachedBannerUrl) {
-      return cachedBannerUrl;
+    // Önce mevcut banner URL'yi kontrol et
+    if (bannerUrl) {
+      return bannerUrl;
     }
 
+    // Banner servisinden yeni banner al
     const response = await fetch(`/api/channel-banner/${channelId}`);
     if (!response.ok) {
       throw new Error(`Banner API Error: ${response.status}`);
     }
     const data = await response.json();
-    
-    // Banner URL'ini önbelleğe al
-    cacheBannerUrl(channelId, data.bannerUrl);
-    
     return data.bannerUrl;
   } catch (error) {
-    handleApiError(error, { channelId, bannerUrl });
+    console.error('Banner alma hatası:', error);
     throw error;
   }
 };
 
 // Thumbnail görüntüsünü getir
-export const fetchThumbnailImage = async (channelId, thumbnailUrl) => {
+const fetchThumbnailImage = async (channelId, thumbnailUrl) => {
   try {
     // Önbellekten kontrol et
     const cachedThumbnailUrl = getCachedThumbnailUrl(channelId);
@@ -189,7 +185,7 @@ export const fetchThumbnailImage = async (channelId, thumbnailUrl) => {
 };
 
 // Kanal bilgilerini işle ve göster
-async function processChannelInfo(channelData) {
+const processChannelInfo = async (channelData) => {
   if (!channelData) return;
 
   try {
@@ -214,10 +210,10 @@ async function processChannelInfo(channelData) {
     console.error('Kanal bilgileri işlenirken hata:', error);
     showError('Kanal bilgileri işlenirken bir hata oluştu');
   }
-}
+};
 
 // Arama işlemini başlat
-async function searchChannel(query) {
+const searchChannel = async (query) => {
   try {
     const channelData = await fetchChannelInfo(query);
     if (channelData) {
@@ -226,7 +222,7 @@ async function searchChannel(query) {
   } catch (error) {
     showError('Kanal bilgileri alınırken bir hata oluştu');
   }
-}
+};
 
 export {
   searchChannel,

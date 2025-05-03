@@ -4,6 +4,10 @@ const API_URL = '/api';
 // Mevcut arama sonuçları - bu değişkeni arama öncesi temizleyeceğiz
 let currentSearchResults = null;
 
+// Banner alma işlemini api.js'den yap
+import { fetchBannerImage } from './js/api.js';
+
+
 // Yükleniyor göstergesini göster
 function showLoading() {
   const loadingElement = document.getElementById('loading');
@@ -453,8 +457,8 @@ function fillChannelData(channel) {
       
       // Otomatik avatar oluştur
       createAutomaticAvatar(channelData, thumbnail, () => {
-        imageTracker.thumbnailLoaded = true;
-        imageTracker.checkAndDisplay();
+      imageTracker.thumbnailLoaded = true;
+      imageTracker.checkAndDisplay();
       });
     };
   } else {
@@ -471,7 +475,7 @@ function fillChannelData(channel) {
   
   // Banner yükleme
   if (bannerElement && channelId) {
-    fetchYouTubeBanner(channelId)
+    fetchBannerImage(channelId)
       .then(bannerUrl => {
         if (bannerUrl) {
           bannerElement.onload = function() {
@@ -514,14 +518,6 @@ function fillChannelData(channel) {
     
     // Yeni eklenen displayChannelData fonksiyonunu kullanarak verileri göster
     displayChannelData(channelData);
-    
-    // Kazanç hesaplaması
-    if (para) {
-      // Kazanç hesaplamasını yap
-      const estimatedEarnings = channelData.estimatedEarnings || {};
-      const kazancVerileri = hesaplaKazanc(izlenmeSayisi, estimatedEarnings);
-      para.innerHTML = olusturKazancHTML(kazancVerileri);
-    }
   }
   
   // Veriler 3 saniye içinde yüklenmezse otomatik göster
@@ -664,165 +660,93 @@ function optimizeImage(imgElement) {
   }
 }
 
-// Kanal izlenme sayısına göre kazanç hesapla
-function hesaplaKazanc(izlenmeSayisi, estimatedEarnings = null) {
-  console.log("📊 Kazanç hesaplama fonksiyonu çalıştırılıyor. Gelen veri:", estimatedEarnings);
-  
-  // Sunucudan gelen tahminleri kullan, yoksa hesapla
-  let minEarnings = 0;
-  let maxEarnings = 0;
-  
-  // Kategori bilgileri ve çarpanları
-  let categoryInfo = null;
-  let multipliers = null;
-
-  if (estimatedEarnings) {
-    // Her durumda dönen veri yapısını kontrol et
-    console.log("📊 Gelen estimatedEarnings veri yapısı:", Object.keys(estimatedEarnings));
-    
-    minEarnings = estimatedEarnings.min || 0;
-    maxEarnings = estimatedEarnings.max || 0;
-    
-    // Kategori bilgilerini ve çarpanları al (sadece sakla, ayrı olarak ekleme)
-    if (estimatedEarnings.categoryInfo) {
-      categoryInfo = estimatedEarnings.categoryInfo;
-      console.log("📌 Kategori bilgisi tespit edildi:", categoryInfo);
-    } else if (estimatedEarnings.metrics && estimatedEarnings.metrics.categoryInfo) {
-      // metrics içinde olabilir (alternatif konum)
-      categoryInfo = estimatedEarnings.metrics.categoryInfo;
-      console.log("📌 Metrics içinde kategori bilgisi tespit edildi:", categoryInfo);
-    }
-    
-    if (estimatedEarnings.multipliers) {
-      multipliers = estimatedEarnings.multipliers;
-      console.log("🔢 Çarpanlar tespit edildi:", multipliers);
-    } else if (estimatedEarnings.metrics && estimatedEarnings.metrics.multipliers) {
-      // metrics içinde olabilir (alternatif konum)
-      multipliers = estimatedEarnings.metrics.multipliers; 
-      console.log("🔢 Metrics içinde çarpanlar tespit edildi:", multipliers);
-    }
-  } else {
-    const viewCountNumber = parseInt(izlenmeSayisi);
-    const minRate = 0.001;
-    const maxRate = 0.003;
-    const monthlyViews = viewCountNumber / 30; // Son 30 gün için ortalama görüntüleme
-    
-    minEarnings = Math.round(monthlyViews * minRate);
-    maxEarnings = Math.round(monthlyViews * maxRate);
-  }
-  
-  // Günlük ortalama izlenme
-  const dailyViews = Math.round(parseInt(izlenmeSayisi) / 30);
-  
-  // Temel kazanç nesnesini oluştur 
-  const result = {
-    daily: {
-      minimum: Math.round(dailyViews * 0.001 * 0.7),
-      estimated: Math.round(dailyViews * 0.001),
-      maximum: Math.round(dailyViews * 0.001 * 1.3)
-    },
-    weekly: {
-      minimum: Math.round(dailyViews * 7 * 0.001 * 0.7 * 1.1),
-      estimated: Math.round(dailyViews * 7 * 0.001 * 1.1),
-      maximum: Math.round(dailyViews * 7 * 0.001 * 1.3 * 1.1)
-    },
-    monthly: {
-      minimum: minEarnings,
-      estimated: Math.round((minEarnings + maxEarnings) / 2),
-      maximum: maxEarnings
-    },
-    yearly: {
-      minimum: minEarnings * 12,
-      estimated: Math.round((minEarnings + maxEarnings) / 2) * 12,
-      maximum: maxEarnings * 12
-    }
-  };
-  
-  // Kategori bilgileri ve çarpanları ekle (hesaplama için gerekli)
-  if (categoryInfo) {
-    result.categoryInfo = categoryInfo;
-    console.log("✅ Kazanç nesnesine kategori bilgisi eklendi:", categoryInfo.type);
-  } else {
-    // Varsayılan kategori bilgisi
-    result.categoryInfo = {
-      type: "Entertainment", 
-      confidence: 75
-    };
-    console.log("⚠️ Varsayılan kategori eklendi: Entertainment");
-  }
-  
-  if (multipliers) {
-    result.multipliers = multipliers;
-    console.log("✅ Kazanç nesnesine çarpanlar eklendi:", multipliers);
-  } else {
-    // Varsayılan çarpanlar
-    result.multipliers = {
-      category: 1.0,
-      engagement: 1.0,
-      age: 1.0,
-      total: 1.0
-    };
-    console.log("⚠️ Varsayılan çarpanlar eklendi");
-  }
-  
-  console.log("📊 Hesaplanan kazanç verileri:", result);
-  return result;
-}
-
 // Kazanç gösterimi için CSS ekle
 function addEarningsCSS() {
-  const style = document.createElement('style');
-  style.textContent = `
-    .earnings-overview {
-      margin-top: 15px;
-      border-radius: 8px;
-      background: rgba(0,0,0,0.1);
-      padding: 15px;
-    }
-    
-    .earnings-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      flex-wrap: wrap;
-    }
-    
-    .earnings-header h3 {
-      margin: 0;
-      font-size: 18px;
-    }
-    
-    .category-badge {
-      display: inline-flex;
-      align-items: center;
-      background: rgba(255,255,255,0.2);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 14px;
-      margin-top: 5px;
-    }
-    
-    .category-name {
-      font-weight: bold;
-      margin-right: 5px;
-    }
-    
-    .category-confidence {
-      opacity: 0.8;
-      font-size: 12px;
-      margin-right: 10px;
-    }
-    
-    .category-multiplier {
-      background: rgba(0,0,0,0.2);
-      padding: 2px 8px;a
-      border-radius: 10px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-  `;
-  document.head.appendChild(style);
+    const style = document.createElement('style');
+    style.textContent = `
+        .earnings-overview {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .earnings-category {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .category-label {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #fff;
+        }
+
+        .category-value {
+            color: #4CAF50;
+            font-weight: 500;
+        }
+
+        .earnings-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .earnings-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .earnings-item:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .earnings-label {
+            display: block;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 5px;
+        }
+
+        .earnings-value {
+            display: block;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .error {
+            color: #ff4444;
+            padding: 15px;
+            background: rgba(255, 68, 68, 0.1);
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .earnings-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .earnings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 // Sayı formatı fonksiyonu
@@ -854,86 +778,100 @@ function formatNumberWithCommas(num) {
 
 // Para miktarını formatlı göster
 function formatMoney(amount) {
-  // Null veya undefined değerlere karşı koruma
-  if (amount === undefined || amount === null) return "0";
-  return amount.toLocaleString();
+    // Null, undefined veya NaN değerlere karşı koruma
+    if (amount === undefined || amount === null || isNaN(amount)) {
+        return "0";
+    }
+    
+    // Number'a çevir
+    const num = Number(amount);
+    if (isNaN(num)) {
+        return "0";
+    }
+    
+    // toLocaleString kullan
+    try {
+        return num.toLocaleString();
+    } catch (error) {
+        console.error('Para formatı hatası:', error);
+        return "0";
+    }
 }
+
+// Kategori çevirileri
+const CATEGORY_TRANSLATIONS = {
+    'News': 'Haber',
+    'Education': 'Eğitim',
+    'Finance': 'Finans',
+    'Gaming': 'Oyun',
+    'Tech': 'Teknoloji',
+    'Entertainment': 'Eğlence',
+    'Vlog': 'Vlog',
+    'Sports': 'Spor',
+    'Beauty': 'Güzellik',
+    'Cooking': 'Yemek',
+    'Uncategorized': 'Kategorisiz'
+};
 
 // Kazanç verilerinden HTML oluştur
 function olusturKazancHTML(kazancVerileri) {
-  // Kategori bilgisi debug etmek için yazdır
-  if (kazancVerileri.categoryInfo) {
-    console.log("⭐ KAZANÇ HTML'İ OLUŞTURULUYOR - KATEGORİ BİLGİSİ:", kazancVerileri.categoryInfo);
-  } else {
-    console.log("⚠️ KAZANÇ HTML'İ OLUŞTURULUYOR - KATEGORİ BİLGİSİ YOK!");
-  }
+    try {
+        // Debug log
+        console.log('Kazanç verileri:', kazancVerileri);
+        
+        // Veri kontrolü
+        if (!kazancVerileri || typeof kazancVerileri !== 'object') {
+            console.error('Geçersiz kazanç verisi:', kazancVerileri);
+            return '<div class="error">Kazanç verisi hesaplanamadı</div>';
+        }
 
-  // Kategori bilgisi ve çarpanlar
-  const categoryType = kazancVerileri.categoryInfo?.type || "Entertainment";
-  const confidence = kazancVerileri.categoryInfo?.confidence || 75;
-  const categoryMultiplier = kazancVerileri.multipliers?.category || 1.0;
+        // Kategori bilgisi ve çarpanlar için güvenlik kontrolleri
+        const categoryInfo = kazancVerileri.categoryInfo || { type: 'Uncategorized', confidence: 0 };
+        const multipliers = kazancVerileri.multipliers || { category: 1.0 };
+        
+        // Kategori çarpanı için güvenlik kontrolü
+        let categoryMultiplier = 1.0;
+        if (multipliers && typeof multipliers.category === 'number' && !isNaN(multipliers.category)) {
+            categoryMultiplier = multipliers.category;
+        }
+
+        // Kategori bilgilerini güvenli şekilde al
+        const categoryType = (categoryInfo && categoryInfo.type) || "Uncategorized";
+        const confidence = (categoryInfo && categoryInfo.confidence) || 0;
   
-  // Kategori adını Türkçe'ye çevir
-  let categoryNameTR = categoryType;
-  switch(categoryType) {
-    case "News": categoryNameTR = "Haber"; break;
-    case "Education": categoryNameTR = "Eğitim"; break;
-    case "Finance": categoryNameTR = "Finans"; break;
-    case "Gaming": categoryNameTR = "Oyun"; break;
-    case "Tech": categoryNameTR = "Teknoloji"; break;
-    case "Entertainment": categoryNameTR = "Eğlence"; break;
-    case "Vlog": categoryNameTR = "Vlog"; break;
-    case "Sports": categoryNameTR = "Spor"; break;
-    case "Beauty": categoryNameTR = "Güzellik"; break;
-    case "Cooking": categoryNameTR = "Yemek"; break;
-    case "Uncategorized": categoryNameTR = "Kategorisiz"; break;
-  }
-  
-  // Ana başlığa kategori bilgisi ekleyerek göster
-  return `
-    <div class="earnings-overview">
-      <div class="earnings-header">
-        <h3>Tahmini Kazanç Hesaplaması</h3>
-        <div class="category-badge">
-          <span class="category-name">${categoryNameTR}</span>
-          <span class="category-confidence">(%${confidence} emin)</span>
-          <span class="category-multiplier">${categoryMultiplier.toFixed(1)}x CPM</span>
-        </div>
-      </div>
-      
-      <div class="earnings-grid">
-        <div class="earnings-card">
-          <h4>Günlük Kazanç</h4>
-          <div class="value min">${formatMoney(kazancVerileri.daily.minimum)} $</div>
-          <div class="value avg">${formatMoney(kazancVerileri.daily.estimated)} $</div>
-          <div class="value max">${formatMoney(kazancVerileri.daily.maximum)} $</div>
-        </div>
-        <div class="earnings-card">
-          <h4>Haftalık Kazanç</h4>
-          <div class="value min">${formatMoney(kazancVerileri.weekly.minimum)} $</div>
-          <div class="value avg">${formatMoney(kazancVerileri.weekly.estimated)} $</div>
-          <div class="value max">${formatMoney(kazancVerileri.weekly.maximum)} $</div>
-        </div>
-        <div class="earnings-card">
-          <h4>Aylık Kazanç</h4>
-          <div class="value min">${formatMoney(kazancVerileri.monthly.minimum)} $</div>
-          <div class="value avg">${formatMoney(kazancVerileri.monthly.estimated)} $</div>
-          <div class="value max">${formatMoney(kazancVerileri.monthly.maximum)} $</div>
-        </div>
-        <div class="earnings-card">
-          <h4>Yıllık Kazanç</h4>
-          <div class="value min">${formatMoney(kazancVerileri.yearly.minimum)} $</div>
-          <div class="value avg">${formatMoney(kazancVerileri.yearly.estimated)} $</div>
-          <div class="value max">${formatMoney(kazancVerileri.yearly.maximum)} $</div>
-        </div>
-      </div>
-      
-      <p style="font-size:12px; opacity:0.8; margin-top:15px; text-align:center;">
-        Not: Bu kazanç tahminleri, kanal verileri ve içerik türü gibi faktörlere dayalı olarak yapılan istatistiksel hesaplamalardır. 
-        Gerçek kazançlar farklılık gösterebilir.
-      </p>
-    </div>
-  `;
+        // Kategori adını Türkçe'ye çevir
+        const categoryNameTR = CATEGORY_TRANSLATIONS[categoryType] || "Kategorisiz";
+
+        // HTML oluştur
+        return `
+            <h3>Tahmini Kazanç</h3>
+            <div class="earnings-category">
+                <span class="category-label">Kategori:</span>
+                <span class="category-value">${categoryNameTR} (${confidence.toFixed(1)}% güven)</span>
+            </div>
+            <div class="earnings-grid">
+                <div class="earnings-item">
+                    <span class="earnings-label">Günlük</span>
+                    <span class="earnings-value">${formatMoney(kazancVerileri.daily?.estimated)}</span>
+                </div>
+                <div class="earnings-item">
+                    <span class="earnings-label">Haftalık</span>
+                    <span class="earnings-value">${formatMoney(kazancVerileri.weekly?.estimated)}</span>
+                </div>
+                <div class="earnings-item">
+                    <span class="earnings-label">Aylık</span>
+                    <span class="earnings-value">${formatMoney(kazancVerileri.monthly?.estimated)}</span>
+                </div>
+                <div class="earnings-item">
+                    <span class="earnings-label">Yıllık</span>
+                    <span class="earnings-value">${formatMoney(kazancVerileri.yearly?.estimated)}</span>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Kazanç HTML oluşturma hatası:', error);
+        return '<div class="error">Kazanç verisi işlenirken hata oluştu</div>';
+    }
 }
 
 // Çarpan açıklaması döndüren yardımcı fonksiyon
@@ -1435,6 +1373,38 @@ function displayChannelData(channelData) {
     console.log('Logo alanı görünür yapıldı');
   }
   
+  // Kazanç alanını görüntüle
+  const paraElement = document.getElementById('para');
+  if (paraElement && channelData.earnings) {
+    const kazancHTML = olusturKazancHTML({
+      ...channelData.earnings.estimatedEarnings,
+      categoryInfo: channelData.earnings.categoryInfo,
+      multipliers: channelData.earnings.multipliers,
+      daily: {
+        minimum: channelData.earnings.estimatedEarnings.min / 30,
+        estimated: (channelData.earnings.estimatedEarnings.min + channelData.earnings.estimatedEarnings.max) / 60,
+        maximum: channelData.earnings.estimatedEarnings.max / 30
+      },
+      weekly: {
+        minimum: channelData.earnings.estimatedEarnings.min / 4,
+        estimated: (channelData.earnings.estimatedEarnings.min + channelData.earnings.estimatedEarnings.max) / 8,
+        maximum: channelData.earnings.estimatedEarnings.max / 4
+      },
+      monthly: {
+        minimum: channelData.earnings.estimatedEarnings.min,
+        estimated: (channelData.earnings.estimatedEarnings.min + channelData.earnings.estimatedEarnings.max) / 2,
+        maximum: channelData.earnings.estimatedEarnings.max
+      },
+      yearly: {
+        minimum: channelData.earnings.estimatedEarnings.min * 12,
+        estimated: (channelData.earnings.estimatedEarnings.min + channelData.earnings.estimatedEarnings.max) * 6,
+        maximum: channelData.earnings.estimatedEarnings.max * 12
+      }
+    });
+    paraElement.innerHTML = kazancHTML;
+    console.log('Kazanç alanı gösterildi');
+  }
+  
   // Eski istatistik alanlarını da doldur (uyumluluk için)
   const title = document.getElementById('title');
   const subscriber = document.getElementById('subscriber');
@@ -1600,3 +1570,107 @@ function createAutomaticAvatar(channelData, thumbnailElement, callback) {
     if (callback) callback();
   }
 }
+
+
+const SEARCH_HISTORY_KEY = 'yt_search_history';
+const MAX_HISTORY = 15;
+const searchInput = document.getElementById('search');
+const dropdown = document.getElementById('search-dropdown');
+let dropdownIndex = -1;
+
+// Geçmişi yükle
+function getHistory() {
+    return JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY) || '[]');
+}
+function setHistory(history) {
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
+}
+
+// Dropdown’u güncelle
+function updateDropdown(filter = '') {
+  const history = getHistory();
+  let filtered = history;
+  if (filter && filter.trim() !== '') {
+      filtered = history.filter(item => item.toLowerCase().includes(filter.toLowerCase()));
+  }
+  dropdown.innerHTML = '';
+  if (filtered.length === 0) {
+      dropdown.style.display = 'none';
+      return;
+  }
+  filtered.forEach((item, i) => {
+      const div = document.createElement('div');
+      div.className = 'dropdown-item';
+
+      // Kanal adı
+      const span = document.createElement('span');
+      span.textContent = item;
+      span.className = 'dropdown-text';
+      span.onmousedown = (e) => {
+          e.preventDefault();
+          searchInput.value = item;
+          dropdown.style.display = 'none';
+          searchInput.focus();
+      };
+
+      // Sil butonu
+      const del = document.createElement('button');
+      del.className = 'dropdown-delete';
+      del.title = 'Geçmişten sil';
+      del.innerHTML = '&times;'; // veya bir çöp kutusu ikonu
+      del.onmousedown = (e) => {
+          e.preventDefault();
+          let history = getHistory();
+          history = history.filter(h => h !== item);
+          setHistory(history);
+          updateDropdown(filter);
+      };
+
+      div.appendChild(span);
+      div.appendChild(del);
+      dropdown.appendChild(div);
+  });
+  dropdown.style.display = 'block';
+  dropdownIndex = -1;
+}
+
+// Input eventleri
+searchInput.addEventListener('focus', () => updateDropdown(''));
+searchInput.addEventListener('input', () => updateDropdown(searchInput.value));
+searchInput.addEventListener('blur', () => setTimeout(() => dropdown.style.display = 'none', 120));
+
+// Enter veya submit’te geçmişe ekle
+searchInput.form?.addEventListener('submit', function(e) {
+    const value = searchInput.value.trim();
+    if (!value) return;
+    let history = getHistory();
+    history = history.filter(item => item !== value);
+    history.unshift(value);
+    if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
+    setHistory(history);
+    updateDropdown(''); // Güncelle
+    dropdown.style.display = 'none'; // <-- Bunu ekle!
+
+});
+
+// Ok tuşlarıyla gezinti
+searchInput.addEventListener('keydown', function(e) {
+    const items = dropdown.querySelectorAll('div');
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') {
+        dropdownIndex = (dropdownIndex + 1) % items.length;
+        items.forEach((el, i) => el.classList.toggle('active', i === dropdownIndex));
+        e.preventDefault();
+    } else if (e.key === 'ArrowUp') {
+        dropdownIndex = (dropdownIndex - 1 + items.length) % items.length;
+        items.forEach((el, i) => el.classList.toggle('active', i === dropdownIndex));
+        e.preventDefault();
+    } else if (e.key === 'Enter' && dropdownIndex >= 0) {
+        searchInput.value = items[dropdownIndex].textContent;
+        dropdown.style.display = 'none';
+        dropdownIndex = -1;
+        e.preventDefault();
+    } else {
+        dropdownIndex = -1;
+    }
+});

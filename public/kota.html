@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube API Kota Takibi</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    body { background: #f8f9fa; }
+    .kota-container { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 24px #0001; padding: 32px; }
+    .quota-summary { display: flex; justify-content: space-around; margin-bottom: 20px; text-align: center; background: #f8f9fa; padding: 15px; border-radius: 8px; }
+    .quota-summary h3 { margin: 0; color: #333; }
+    .quota-summary p { font-size: 24px; font-weight: bold; margin: 5px 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px; border-bottom: 1px solid #ddd; }
+    th { background: #4285F4; color: #fff; }
+    .status-active { color: #0F9D58; font-weight: bold; }
+    .status-quota_exceeded { color: #DB4437; font-weight: bold; }
+    .status-invalid_key { color: #F4B400; font-weight: bold; }
+    .status-error { color: #757575; font-weight: bold; }
+    #refresh-quotas { background: #4285F4; color: #fff; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    #refresh-quotas:hover { background: #3367d6; }
+    @media (max-width: 600px) {
+      .kota-container { padding: 10px; }
+      .quota-summary { flex-direction: column; gap: 10px; }
+      th, td { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="kota-container">
+    <h2 style="margin-top: 0; color: #333;">YouTube API Kota Takibi</h2>
+    <div id="api-quotas-loading" style="text-align: center; padding: 20px;">
+      <p>API kotaları kontrol ediliyor...</p>
+    </div>
+    <div id="api-quotas-error" style="display: none; color: red; padding: 10px; background-color: #ffeeee; border-radius: 5px; margin-bottom: 15px;">
+      <p>Hata mesajı burada görünecek</p>
+    </div>
+    <div id="api-quotas-container" style="display: none;">
+      <div class="quota-summary">
+        <div>
+          <h3>Toplam API Anahtarı</h3>
+          <p id="total-keys">0</p>
+        </div>
+        <div>
+          <h3>Aktif Anahtarlar</h3>
+          <p id="active-keys">0</p>
+        </div>
+        <div>
+          <h3>Limit Aşılan</h3>
+          <p id="exceeded-keys">0</p>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>API Anahtarı</th>
+            <th>Durum</th>
+            <th>Kota Kullanımı</th>
+            <th>Son Kontrol</th>
+          </tr>
+        </thead>
+        <tbody id="api-keys-list"></tbody>
+      </table>
+      <div style="margin-top: 20px; text-align: right;">
+        <button id="refresh-quotas">Yenile</button>
+      </div>
+    </div>
+  </div>
+  <script>
+   document.addEventListener('DOMContentLoaded', function() {
+  const loadingEl = document.getElementById('api-quotas-loading');
+  const errorEl = document.getElementById('api-quotas-error');
+  const containerEl = document.getElementById('api-quotas-container');
+  const totalKeysEl = document.getElementById('total-keys');
+  const activeKeysEl = document.getElementById('active-keys');
+  const exceededKeysEl = document.getElementById('exceeded-keys');
+  const keysListEl = document.getElementById('api-keys-list');
+  const refreshBtn = document.getElementById('refresh-quotas');
+
+  // Kota verilerini yükle
+  function fetchApiQuotas() {
+    loadingEl.style.display = 'block';
+    errorEl.style.display = 'none';
+    containerEl.style.display = 'none';
+
+    fetch('/api/api-quotas')
+      .then(response => {
+        if (!response.ok) throw new Error(`Sunucu hatası: ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        loadingEl.style.display = 'none';
+        containerEl.style.display = 'block';
+
+        // Özet bilgileri güncelle
+        totalKeysEl.textContent = data.totalKeys || 0;
+        activeKeysEl.textContent = data.activeKeys || 0;
+        exceededKeysEl.textContent = data.results.filter(key => key.status === 'quota_exceeded').length;
+
+        // API anahtarları listesini temizle
+        keysListEl.innerHTML = '';
+
+        // Her API anahtarı için tablo satırı oluştur
+        data.results.forEach(keyData => {
+          let statusClass = '';
+          let statusText = '';
+          switch (keyData.status) {
+            case 'active': statusClass = 'status-active'; statusText = 'Aktif'; break;
+            case 'quota_exceeded': statusClass = 'status-quota_exceeded'; statusText = 'Kota Aşıldı'; break;
+            case 'invalid_key': statusClass = 'status-invalid_key'; statusText = 'Geçersiz Anahtar'; break;
+            default: statusClass = 'status-error'; statusText = 'Hata';
+          }
+          let quotaInfo = keyData.status === 'active'
+            ? `${keyData.quotaUsed} / ${keyData.quotaLimit}`
+            : (keyData.errorDetails || 'Bilgi yok');
+          const lastChecked = new Date(keyData.lastChecked).toLocaleString('tr-TR');
+          keysListEl.innerHTML += `
+            <tr>
+              <td>${keyData.keyId} (${keyData.key})</td>
+              <td class="${statusClass}">${statusText}</td>
+              <td>${quotaInfo}</td>
+              <td>${lastChecked}</td>
+            </tr>
+          `;
+        });
+      })
+      .catch(error => {
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        errorEl.querySelector('p').textContent = error.message || 'API kotaları alınırken hata oluştu.';
+      });
+  }
+
+  // Sayfa yüklenince ve yenile butonuna basınca çalışsın
+  fetchApiQuotas();
+  if (refreshBtn) refreshBtn.addEventListener('click', fetchApiQuotas);
+});
+  </script>
+</body>
+</html>
